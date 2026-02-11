@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = async (email, password) => {
+        const data = await authService.login(email, password);
         localStorage.setItem('token', data.token);
         setUser(data.user);
         return data;
@@ -39,7 +40,7 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={{
-            user, loading, isAuthenticad: !!user,
+            user, loading, isAuthenticated: !!user,
             login, register, logout
         }}>
             {children}

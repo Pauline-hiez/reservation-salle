@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header.jsx';
 import Footer from '../components/Footer.jsx';
- 
+
 function MainLayout() {
   return (
     <div>
@@ -13,5 +13,5 @@ function MainLayout() {
     </div>
   );
 }
- 
+
 export default MainLayout;

@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 
 function Header() {
-    const { user, isAuthenticad, logout } = useAuth();
+    const { user, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -16,7 +16,7 @@ function Header() {
 
             <nav>
                 <NavLink to="/">Accueil</NavLink>
-                {isAuthenticad && <NavLink to="/dashboard">Dashboard</NavLink>}
+                {isAuthenticated && <NavLink to="/dashboard">Dashboard</NavLink>}
             </nav>
 
             <div>
