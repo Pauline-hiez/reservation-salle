@@ -4,9 +4,9 @@ import Footer from '../components/Footer.jsx';
 
 function MainLayout() {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main>
+      <main className="flex-1">
         <Outlet />  {/* ← La page enfant s'affiche ici */}
       </main>
       <Footer />

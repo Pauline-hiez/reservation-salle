@@ -1,7 +1,7 @@
 function Footer() {
     return (
-        <footer>
-            <p>Starter Kit - © {new Date().getFullYear()} La Plateforme_</p>
+        <footer className="bg-cyan-500 text-white py-4 text-center">
+            <p className="text-sm">Starter Kit - © {new Date().getFullYear()} La Plateforme_</p>
         </footer>
     );
 }
