@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.js';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../services/api.js';
 import Header from '../components/Header.jsx';
 
 function Register() {
@@ -10,10 +10,7 @@ function Register() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { register } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
-    const from = location.state?.from?.pathname || '/login';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,8 +30,11 @@ function Register() {
         setLoading(true);
 
         try {
-            await register({ email, password });
-            navigate(from, { replace: true });
+            await authService.register({ email, password });
+            navigate('/login', {
+                replace: true,
+                state: { message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' }
+            });
         } catch (err) {
             setError(err.message || 'Erreur d\'inscription');
         } finally {

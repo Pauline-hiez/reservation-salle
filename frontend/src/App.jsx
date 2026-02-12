@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth.js';
 import MainLayout from './layouts/MainLayout.jsx';
 import AuthLayout from './layouts/AuthLayout.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import LogoutButton from './components/LogoutButton.jsx';
 
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
@@ -16,23 +17,26 @@ function App() {
   if (loading) return <div><p>Chargement...</p></div>;
 
   return (
-    <Routes>
-      {/* Routes AVEC Header + Footer */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={
-          <PrivateRoute><Dashboard /></PrivateRoute>
-        } />
-      </Route>
+    <>
+      <LogoutButton />
+      <Routes>
+        {/* Routes AVEC Header + Footer */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={
+            <PrivateRoute><Dashboard /></PrivateRoute>
+          } />
+        </Route>
 
-      {/* Routes SANS Header (plein écran) */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Route>
+        {/* Routes SANS Header (plein écran) */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </>
   );
 }
 
