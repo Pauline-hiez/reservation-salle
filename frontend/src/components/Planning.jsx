@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { reservationService } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Planning() {
     const moisNoms = [
@@ -14,8 +16,148 @@ export default function Planning() {
     const [jour, setJour] = useState(aujourdHui.getDate());
     const nbJours = new Date(annee, mois + 1, 0).getDate();
 
+    // États pour les réservations
+    const [reservations, setReservations] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [showTimeModal, setShowTimeModal] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [formData, setFormData] = useState({
+        titre: '',
+        duree: 1 // durée en heures
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const { user } = useAuth();
+
     const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const joursSemaineAbr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+    // Charger les réservations au montage du composant et lors des changements de période
+    useEffect(() => {
+        loadReservations();
+    }, [annee, mois, vue]);
+
+    // Charger les réservations
+    const loadReservations = async () => {
+        try {
+            setLoading(true);
+            const reservations = await reservationService.getAll();
+            setReservations(reservations);
+            setError(null);
+        } catch (err) {
+            console.error('Erreur chargement réservations:', err);
+            setError('Erreur lors du chargement des réservations');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Ouvrir la modal de réservation
+    const openModal = (date, heure) => {
+        const dateDebut = new Date(date);
+        dateDebut.setHours(heure, 0, 0, 0);
+
+        setSelectedSlot({ date, heure, dateDebut });
+        setFormData({ titre: '', duree: 1 });
+        setShowModal(true);
+        setError(null);
+    };
+
+    // Fermer la modal
+    const closeModal = () => {
+        setShowModal(false);
+        setSelectedSlot(null);
+        setFormData({ titre: '', duree: 1 });
+        setError(null);
+    };
+
+    // Ouvrir la modal de sélection d'horaire pour la vue mois
+    const openTimeSelectionModal = (dateStr) => {
+        setSelectedDate(dateStr);
+        setShowTimeModal(true);
+        setError(null);
+    };
+
+    // Fermer la modal de sélection d'horaire
+    const closeTimeModal = () => {
+        setShowTimeModal(false);
+        setSelectedDate(null);
+        setError(null);
+    };
+
+    // Sélectionner un horaire depuis la modal
+    const selectTimeSlot = (heure) => {
+        closeTimeModal();
+        openModal(selectedDate, heure);
+    };
+
+    // Gérer les changements dans le formulaire
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Créer la réservation
+    const handleCreateReservation = async (e) => {
+        e.preventDefault();
+
+        if (!formData.titre.trim()) {
+            setError('Le titre est requis');
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const debut = new Date(selectedSlot.dateDebut);
+            const fin = new Date(debut);
+            fin.setHours(debut.getHours() + parseInt(formData.duree));
+
+            await reservationService.create({
+                titre: formData.titre,
+                debut: debut.toISOString(),
+                fin: fin.toISOString()
+            });
+
+            await loadReservations();
+            closeModal();
+            alert('Réservation créée avec succès !');
+        } catch (err) {
+            console.error('Erreur création réservation:', err);
+            setError(err.message || 'Erreur lors de la création de la réservation');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Vérifier si un créneau est réservé
+    const isSlotReserved = (date, heure) => {
+        return reservations.some(reservation => {
+            const debut = new Date(reservation.debut);
+            const fin = new Date(reservation.fin);
+            const slotDate = new Date(date);
+            slotDate.setHours(heure, 0, 0, 0);
+            const slotEnd = new Date(slotDate);
+            slotEnd.setHours(heure + 1, 0, 0, 0);
+
+            return (debut < slotEnd && fin > slotDate);
+        });
+    };
+
+    // Obtenir les réservations pour un créneau
+    const getReservationsForSlot = (date, heure) => {
+        return reservations.filter(reservation => {
+            const debut = new Date(reservation.debut);
+            const fin = new Date(reservation.fin);
+            const slotDate = new Date(date);
+            slotDate.setHours(heure, 0, 0, 0);
+            const slotEnd = new Date(slotDate);
+            slotEnd.setHours(heure + 1, 0, 0, 0);
+
+            return (debut < slotEnd && fin > slotDate);
+        });
+    };
 
     // Choix d'affichage par jour, semaine, mois ou année
     const precedent = () => {
@@ -152,8 +294,9 @@ export default function Planning() {
     // Rendu de la vue jour
     const renderVueJour = () => {
         const dateActuelle = new Date(annee, mois, jour);
+        const dateStr = `${annee}-${String(mois + 1).padStart(2, '0')}-${String(jour).padStart(2, '0')}`;
         const estPasse = dateActuelle < new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), aujourdHui.getDate());
-        const horaires = Array.from({ length: 12 }, (_, i) => i + 8); // 8h à 19h
+        const horaires = Array.from({ length: 11 }, (_, i) => i + 8); // 8h à 19h
 
         return (
             <div className="bg-white rounded-lg shadow-xl/30 overflow-hidden">
@@ -164,15 +307,29 @@ export default function Planning() {
                         </h3>
                     </div>
                     <div className="space-y-2">
-                        {horaires.map((heure) => (
-                            <div
-                                key={`horaire-${heure}`}
-                                className={`p-4 border border-cyan-200 rounded ${estPasse ? 'bg-cyan-50 cursor-not-allowed' : 'bg-white hover:bg-cyan-50 cursor-pointer'
-                                    } transition-colors`}
-                            >
-                                <span className="font-semibold text-cyan-700">{heure}h00 - {heure + 1}h00</span>
-                            </div>
-                        ))}
+                        {horaires.map((heure) => {
+                            const isReserved = isSlotReserved(dateStr, heure);
+                            const slotReservations = getReservationsForSlot(dateStr, heure);
+
+                            return (
+                                <div
+                                    key={`horaire-${heure}`}
+                                    className={`p-4 border border-cyan-200 rounded ${estPasse || isReserved
+                                        ? 'bg-cyan-200 cursor-not-allowed'
+                                        : 'bg-white hover:bg-cyan-50 cursor-pointer'
+                                        } transition-colors`}
+                                    onClick={() => !estPasse && !isReserved && openModal(dateStr, heure)}
+                                >
+                                    <span className="font-semibold text-cyan-700">{heure}h00 - {heure + 1}h00</span>
+                                    {isReserved && slotReservations.map(res => (
+                                        <div key={res.id} className="mt-2 text-sm text-cyan-900 font-medium">
+                                            🔒 {res.titre}
+                                            {res.description && <p className="text-xs text-cyan-700">{res.description}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -182,7 +339,7 @@ export default function Planning() {
     // Rendu de la vue semaine
     const renderVueSemaine = () => {
         const joursSemaineVue = getJoursSemaine();
-        const horaires = Array.from({ length: 12 }, (_, i) => i + 8); // 8h à 19h
+        const horaires = Array.from({ length: 11 }, (_, i) => i + 8); // 8h à 19h
 
         return (
             <div className="bg-white rounded-lg shadow-xl/30 overflow-hidden">
@@ -215,15 +372,33 @@ export default function Planning() {
                                         {heure}h
                                     </div>
                                     {joursSemaineVue.map((date, index) => {
+                                        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                                         const estPasse = date < new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), aujourdHui.getDate());
+                                        const isReserved = isSlotReserved(dateStr, heure);
+                                        const slotReservations = getReservationsForSlot(dateStr, heure);
+
                                         return (
                                             <div
                                                 key={`cell-${heure}-${index}`}
-                                                className={`${estPasse
-                                                    ? 'bg-cyan-100 cursor-not-allowed'
+                                                className={`${estPasse || isReserved
+                                                    ? 'bg-cyan-200 cursor-not-allowed'
                                                     : 'bg-white hover:bg-cyan-50 cursor-pointer'
-                                                    } border-r border-b border-cyan-800 h-16 transition-colors`}
-                                            ></div>
+                                                    } border-r border-b border-cyan-800 h-16 transition-colors relative group`}
+                                                onClick={() => !estPasse && !isReserved && openModal(dateStr, heure)}
+                                            >
+                                                {isReserved && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <span className="text-xs font-bold text-cyan-900">🔒</span>
+                                                    </div>
+                                                )}
+                                                {isReserved && (
+                                                    <div className="hidden group-hover:block absolute z-10 bg-cyan-700 text-white p-2 rounded shadow-lg text-xs whitespace-nowrap">
+                                                        {slotReservations.map(res => (
+                                                            <div key={res.id}>{res.titre}</div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -271,6 +446,7 @@ export default function Planning() {
                             <div
                                 key={item.key}
                                 className={cellClass}
+                                onClick={() => !item.estPasse && openTimeSelectionModal(item.date)}
                             >
                                 <span className="text-sm font-medium">{item.numero}</span>
                             </div>
@@ -411,6 +587,158 @@ export default function Planning() {
                 {vue === 'mois' && renderVueMois()}
                 {vue === 'annee' && renderVueAnnee()}
             </div>
+
+            {/* Modal de réservation */}
+            {showModal && (
+                <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-800">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-2xl font-bold text-cyan-600">Nouvelle Réservation</h3>
+                            <button
+                                onClick={closeModal}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {selectedSlot && (
+                            <div className="mb-4 p-3 bg-cyan-50 rounded">
+                                <p className="text-sm text-cyan-700">
+                                    <strong>Date :</strong> {new Date(selectedSlot.dateDebut).toLocaleDateString('fr-FR')}
+                                </p>
+                                <p className="text-sm text-cyan-700">
+                                    <strong>Heure de début :</strong> {selectedSlot.heure}h00
+                                </p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleCreateReservation}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                    Objet de la réservation *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="titre"
+                                    value={formData.titre}
+                                    onChange={handleFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-500"
+                                    placeholder="Ex: Réunion d'équipe"
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                    Durée (heures) *
+                                </label>
+                                <select
+                                    name="duree"
+                                    value={formData.duree}
+                                    onChange={handleFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-500"
+                                    required
+                                >
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(h => (
+                                        <option key={h} value={h}>{h} heure{h > 1 ? 's' : ''}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+                                    disabled={loading}
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Réservation...' : 'Confirmer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de sélection d'horaire (vue mois) */}
+            {showTimeModal && selectedDate && (
+                <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-3 border-solid border-cyan-800">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-2xl font-bold text-cyan-600">Sélectionner un horaire</h3>
+                            <button
+                                onClick={closeTimeModal}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-cyan-50 rounded">
+                            <p className="text-sm text-cyan-700">
+                                <strong>Date :</strong> {new Date(selectedDate).toLocaleDateString('fr-FR')}
+                            </p>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="max-h-96 overflow-y-auto space-y-2">
+                            {Array.from({ length: 11 }, (_, i) => i + 8).map((heure) => {
+                                const isReserved = isSlotReserved(selectedDate, heure);
+                                const slotReservations = getReservationsForSlot(selectedDate, heure);
+
+                                return (
+                                    <button
+                                        key={`time-${heure}`}
+                                        onClick={() => !isReserved && selectTimeSlot(heure)}
+                                        disabled={isReserved}
+                                        className={`w-full p-4 border border-cyan-200 rounded text-left transition-colors ${isReserved
+                                            ? 'bg-cyan-200 cursor-not-allowed opacity-60'
+                                            : 'bg-white hover:bg-cyan-50 cursor-pointer'
+                                            }`}
+                                    >
+                                        <span className="font-semibold text-cyan-700">
+                                            {heure}h00 - {heure + 1}h00
+                                        </span>
+                                        {isReserved && slotReservations.map(res => (
+                                            <div key={res.id} className="mt-2 text-sm text-cyan-900 font-medium">
+                                                🔒 {res.titre}
+                                            </div>
+                                        ))}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-6">
+                            <button
+                                onClick={closeTimeModal}
+                                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

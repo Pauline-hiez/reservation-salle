@@ -33,3 +33,41 @@ export const authService = {
     }),
     getProfile: () => fetchAPI('/auth/me')
 };
+
+export const reservationService = {
+    // Créer une réservation
+    create: (reservationData) => fetchAPI('/reservations', {
+        method: 'POST',
+        body: JSON.stringify(reservationData)
+    }),
+
+    // Récupérer toutes les réservations
+    getAll: () => fetchAPI('/reservations'),
+
+    // Récupérer les réservations par période
+    getByPeriod: (start, end) => fetchAPI(`/reservations/period?start=${start}&end=${end}`),
+
+    // Récupérer mes réservations
+    getMyReservations: () => fetchAPI('/reservations/my'),
+
+    // Récupérer une réservation par ID
+    getById: (id) => fetchAPI(`/reservations/${id}`),
+
+    // Mettre à jour une réservation
+    update: (id, reservationData) => fetchAPI(`/reservations/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(reservationData)
+    }),
+
+    // Supprimer une réservation
+    delete: (id) => fetchAPI(`/reservations/${id}`, {
+        method: 'DELETE'
+    }),
+
+    // Vérifier la disponibilité
+    checkAvailability: (debut, fin, excludeId = null) => {
+        let url = `/reservations/availability?debut=${debut}&fin=${fin}`;
+        if (excludeId) url += `&excludeId=${excludeId}`;
+        return fetchAPI(url);
+    }
+};
