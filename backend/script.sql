@@ -25,11 +25,11 @@ USE reservation_salles ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS reservation_salles.users (
   id INT NOT NULL AUTO_INCREMENT,
-  emaill VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE INDEX email_UNIQUE (emaill ASC) VISIBLE)
+  UNIQUE INDEX email_UNIQUE (email ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;

@@ -48,7 +48,7 @@ function Header() {
                     </>
                 ) : (
                     <NavLink
-                        to="/login"
+                        to="/register"
                         className={({ isActive }) =>
                             `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
                         }
@@ -59,26 +59,22 @@ function Header() {
             </nav>
 
             {/* Icône de déconnexion à droite */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center">
                 {isAuthenticated ? (
                     <button
                         onClick={handleLogout}
-                        className="hover:text-cyan-100 transition-colors p-2"
+                        className="hover:text-cyan-100 transition-colors"
                         title="Se déconnecter"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-9 text-red-800 hover:text-red-600 transition-colors">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                        </svg>
+                        <img src="/assets/img/deco.png" alt="Déconnexion" className="w-10 h-10 hover:opacity-80 transition-opacity drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" />
                     </button>
                 ) : (
                     <Link
                         to="/login"
-                        className="hover:text-cyan-100 transition-colors p-2"
+                        className="hover:text-cyan-100 transition-colors"
                         title="Se connecter"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-red-800 hover:text-red-600 transition-colors drop-shadow-xl">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                        </svg>
+                        <img src="/assets/img/deco.png" alt="Connexion" className="w-10 h-10 hover:opacity-80 transition-opacity drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" />
                     </Link>
                 )}
             </div>

@@ -23,7 +23,7 @@ export async function testConnection() {
         console.log('MySQL connecté');
         connection.release();
         return true;
-    } catch {
+    } catch (error) {
         console.error("Erreur MySQL:", error.message);
         return false;
     }
