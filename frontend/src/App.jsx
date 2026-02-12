@@ -4,12 +4,12 @@ import { useAuth } from './hooks/useAuth.js';
 import MainLayout from './layouts/MainLayout.jsx';
 import AuthLayout from './layouts/AuthLayout.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
-import LogoutButton from './components/LogoutButton.jsx';
+import DecoButton from './components/DecoButton.jsx';
 
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
-import Dashboard from './pages/Dashboard.jsx';
+import Planning from './pages/Planning.jsx';
 
 function App() {
   const { loading } = useAuth();
@@ -18,13 +18,15 @@ function App() {
 
   return (
     <>
-      <LogoutButton />
+      <DecoButton />
       <Routes>
         {/* Routes AVEC Header + Footer */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={
-            <PrivateRoute><Dashboard /></PrivateRoute>
+          <Route path="/planning" element={
+            <PrivateRoute>
+              <Planning />
+            </PrivateRoute>
           } />
         </Route>
 

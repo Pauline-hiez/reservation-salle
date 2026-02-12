@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 
-function LogoutButton() {
+function DecoButton() {
     const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -27,4 +27,4 @@ function LogoutButton() {
     );
 }
 
-export default LogoutButton;
+export default DecoButton;
