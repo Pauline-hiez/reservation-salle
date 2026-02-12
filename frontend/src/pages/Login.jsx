@@ -33,7 +33,7 @@ function Login() {
     return (
         <>
             <Header />
-            <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-cyan-50 to-cyan-100 pt-12 pb-12">
+            <div className="min-h-screen flex items-start justify-center bg-gradient-to-t from-cyan-100 to-cyan-50 pt-12 pb-12">
                 <div className="bg-cyan-400 backdrop-blur-sm rounded-3xl shadow-2xl p-8 w-full max-w-md">
                     {/* Titre */}
                     <h1 className="text-4xl font-bold text-white text-center mb-6">Connexion</h1>

@@ -15,7 +15,7 @@ function LogoutButton() {
     return (
         <button
             onClick={handleLogout}
-            className="fixed bottom-6 right-6 z-50 hover:opacity-80 transition-opacity"
+            className="fixed bottom-6 right-6 z-50 hover:opacity-80 transition-opacity cursor-pointer"
             title="Se déconnecter"
         >
             <img

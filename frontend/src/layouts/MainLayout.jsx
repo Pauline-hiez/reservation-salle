@@ -4,7 +4,7 @@ import Footer from '../components/Footer.jsx';
 
 function MainLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-t from-cyan-100 to-cyan-50">
       <Header />
       <main className="flex-1">
         <Outlet />  {/* ← La page enfant s'affiche ici */}

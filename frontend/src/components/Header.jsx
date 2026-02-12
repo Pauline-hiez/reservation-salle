@@ -5,7 +5,7 @@ function Header() {
     const { isAuthenticated } = useAuth();
 
     return (
-        <header className="bg-cyan-500 text-white flex items-center justify-between px-6 py-4 shadow-md">
+        <header className="bg-cyan-500 text-white flex items-center justify-between px-6 py-4 shadow-[0_4px_15px_rgba(22,78,99,0.5)]">
             {/* Logo à gauche */}
             <Link to='/' className="flex-shrink-0">
                 <img src="/assets/img/techspace-logo.webp" className="w-32 brightness-0 invert" alt="Logo TechSpace" />
