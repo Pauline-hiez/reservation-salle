@@ -1,8 +1,17 @@
 import { query } from '../config/db.js';
 
+// Fonction pour convertir une date ISO en format MySQL
+const formatDateForMySQL = (isoDate) => {
+    const date = new Date(isoDate);
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+};
+
 const Reservation = {
     // Créer une réservation
     async create({ titre, description, debut, fin, users_id }) {
+        // Convertir les dates au format MySQL
+        const debutFormatted = formatDateForMySQL(debut);
+        const finFormatted = formatDateForMySQL(fin);
         // Vérifier qu'il n'y a pas de conflit de réservation
         const checkSql = `
             SELECT * FROM reservations 
@@ -12,7 +21,7 @@ const Reservation = {
                 (debut >= ? AND fin <= ?)
             )
         `;
-        const conflicts = await query(checkSql, [fin, debut, fin, debut, debut, fin]);
+        const conflicts = await query(checkSql, [finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
 
         if (conflicts.length > 0) {
             throw new Error('Cette plage horaire est déjà réservée');
@@ -23,14 +32,14 @@ const Reservation = {
             INSERT INTO reservations (titre, description, debut, fin, users_id)
             VALUES (?, ?, ?, ?, ?)
         `;
-        const result = await query(sql, [titre, description, debut, fin, users_id]);
+        const result = await query(sql, [titre, description, debutFormatted, finFormatted, users_id]);
 
         return {
             id: result.insertId,
             titre,
             description,
-            debut,
-            fin,
+            debut: debutFormatted,
+            fin: finFormatted,
             users_id
         };
     },
@@ -38,7 +47,8 @@ const Reservation = {
     // Récupérer toutes les réservations
     async findAll() {
         const sql = `
-            SELECT r.*, u.email as user_email
+            SELECT r.*, u.email as user_email,
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
             ORDER BY r.debut ASC
@@ -49,7 +59,8 @@ const Reservation = {
     // Récupérer les réservations par période
     async findByPeriod(startDate, endDate) {
         const sql = `
-            SELECT r.*, u.email as user_email
+            SELECT r.*, u.email as user_email,
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
             WHERE r.debut >= ? AND r.fin <= ?
@@ -61,7 +72,8 @@ const Reservation = {
     // Récupérer une réservation par ID
     async findById(id) {
         const sql = `
-            SELECT r.*, u.email as user_email
+            SELECT r.*, u.email as user_email,
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
             WHERE r.id = ?
@@ -73,7 +85,8 @@ const Reservation = {
     // Récupérer les réservations d'un utilisateur
     async findByUserId(userId) {
         const sql = `
-            SELECT r.*, u.email as user_email
+            SELECT r.*, u.email as user_email,
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
             WHERE r.users_id = ?
@@ -84,6 +97,10 @@ const Reservation = {
 
     // Mettre à jour une réservation
     async update(id, { titre, description, debut, fin, users_id }) {
+        // Convertir les dates au format MySQL
+        const debutFormatted = formatDateForMySQL(debut);
+        const finFormatted = formatDateForMySQL(fin);
+
         // Vérifier qu'il n'y a pas de conflit (sauf avec la réservation actuelle)
         const checkSql = `
             SELECT * FROM reservations 
@@ -93,7 +110,7 @@ const Reservation = {
                 (debut >= ? AND fin <= ?)
             )
         `;
-        const conflicts = await query(checkSql, [id, fin, debut, fin, debut, debut, fin]);
+        const conflicts = await query(checkSql, [id, finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
 
         if (conflicts.length > 0) {
             throw new Error('Cette plage horaire est déjà réservée');
@@ -104,7 +121,7 @@ const Reservation = {
             SET titre = ?, description = ?, debut = ?, fin = ?
             WHERE id = ? AND users_id = ?
         `;
-        const result = await query(sql, [titre, description, debut, fin, id, users_id]);
+        const result = await query(sql, [titre, description, debutFormatted, finFormatted, id, users_id]);
 
         if (result.affectedRows === 0) {
             throw new Error('Réservation non trouvée ou non autorisée');
