@@ -10,6 +10,7 @@ import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Planning from './pages/Planning.jsx';
+import Profil from './pages/Profil.jsx';
 
 function App() {
   const { loading } = useAuth();
@@ -23,6 +24,11 @@ function App() {
         {/* Routes AVEC Header + Footer */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/profil" element={
+            <PrivateRoute>
+              <Profil />
+            </PrivateRoute>
+          } />
           <Route path="/planning" element={
             <PrivateRoute>
               <Planning />
