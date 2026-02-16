@@ -19,7 +19,6 @@ function App() {
 
   return (
     <>
-      <DecoButton />
       <Routes>
         {/* Routes AVEC Header + Footer */}
         <Route element={<MainLayout />}>

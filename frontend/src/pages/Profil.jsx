@@ -245,14 +245,15 @@ function Profil() {
             {/* Section informations utilisateur */}
             {user && (
                 <div className="bg-white rounded-lg border-2 border-cyan-800 shadow-xl p-6 mb-8 max-w-2xl mx-auto">
-                    <div className="flex items-center gap-6">
+                    {/* Logo en haut centré */}
+                    <div className="flex justify-center mb-8">
+                        <img src="/assets/img/techspace-logo.webp" alt="Logo TechSpace" className="h-30" />
+                    </div>
 
-
-                        {/* Informations */}
-                        <div className="flex-1 rounded-lg p-4">
-                            <div className="flex justify-center mb-8">
-                                <img src="/assets/img/techspace-logo.webp" alt="Logo TechSpace" className="h-30" />
-                            </div>
+                    {/* Informations à gauche et image à droite */}
+                    <div className="flex items-center gap-6 ml-16">
+                        {/* Informations à gauche */}
+                        <div className="flex-1">
                             <div className="mb-3">
                                 <p className="text-2xl text-cyan-800 font-bold">Nom :</p>
                                 <p className="text-xl text-cyan-800 font-bold">
@@ -273,6 +274,11 @@ function Profil() {
                                     {formatInscriptionDate(user.created_at)}
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Image utilisateur à droite */}
+                        <div className="flex-shrink-0">
+                            <img src="/assets/icons/user.png" alt="Icône utilisateur" className="w-40 h-40 border-2 border-cyan-600 rounded-full mr-16 mb-10" />
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-
+import DecoButton from './DecoButton.jsx';
 function Header() {
     const { isAuthenticated } = useAuth();
 
@@ -8,7 +8,7 @@ function Header() {
         <header className="bg-cyan-500 text-white text-2xl text-shadow-lg flex items-center justify-between px-6 py-4 shadow-[0_4px_15px_rgba(22,78,99,0.5)]">
             {/* Logo à gauche */}
             <Link to='/' className="flex-shrink-0">
-                <img src="/assets/img/techspace-logo.webp" className="w-32 brightness-0 invert" alt="Logo TechSpace" />
+                <img src="/assets/img/logo.png" className="w-15 brightness-0 invert" alt="Logo TechSpace" />
             </Link>
 
             {/* Navigation au centre */}
@@ -39,6 +39,7 @@ function Header() {
                         >
                             Mon profil
                         </NavLink>
+                        <DecoButton />
                     </>
                 ) : (
                     <>

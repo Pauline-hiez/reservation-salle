@@ -15,13 +15,13 @@ function DecoButton() {
     return (
         <button
             onClick={handleLogout}
-            className="fixed bottom-6 right-6 z-50 hover:opacity-80 transition-opacity cursor-pointer"
+            className="right-6 z-50 hover:opacity-80 transition-opacity cursor-pointer"
             title="Se déconnecter"
         >
             <img
-                src="/assets/img/deco.png"
+                src="/assets/icons/deco.png"
                 alt="Déconnexion"
-                className="w-14 h-14 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]"
+                className="w-10 h-10 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] invert transition-transform hover:scale-110 absolute inset-y-0 right-0 w-12 h-12 mr-10 mt-4"
             />
         </button>
     );
