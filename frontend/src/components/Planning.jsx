@@ -30,6 +30,8 @@ export default function Planning() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingReservationId, setEditingReservationId] = useState(null);
     const { user } = useAuth();
 
     const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -68,6 +70,13 @@ export default function Planning() {
         const dateDebut = new Date(date);
         dateDebut.setHours(heure, 0, 0, 0);
 
+        // Vérifier si le créneau est dans le passé
+        const maintenant = new Date();
+        if (dateDebut <= maintenant) {
+            setError('Vous ne pouvez pas réserver sur un créneau passé ou en cours');
+            return;
+        }
+
         setSelectedSlot({ date, heure, dateDebut });
         setFormData({ titre: '', duree: 1 });
         setShowModal(true);
@@ -80,6 +89,8 @@ export default function Planning() {
         setSelectedSlot(null);
         setFormData({ titre: '', duree: 1 });
         setError(null);
+        setIsEditing(false);
+        setEditingReservationId(null);
     };
 
     // Ouvrir la modal de sélection d'horaire pour la vue mois
@@ -109,6 +120,39 @@ export default function Planning() {
         setSelectedReservation(null);
     };
 
+    // Ouvrir la modal en mode édition
+    const openEditModal = (reservation, e) => {
+        if (e) e.stopPropagation();
+
+        // Fermer la modal de détails si elle est ouverte
+        setShowDetailsModal(false);
+
+        // Vérifier que c'est bien la réservation de l'utilisateur
+        if (Number(reservation.users_id) !== Number(user?.id)) {
+            setError("Vous ne pouvez modifier que vos propres réservations");
+            return;
+        }
+
+        const debut = new Date(reservation.debut);
+        const fin = new Date(reservation.fin);
+        const dureeHeures = Math.round((fin - debut) / (1000 * 60 * 60));
+
+        // Préparer les données pour le formulaire
+        setIsEditing(true);
+        setEditingReservationId(reservation.id);
+        setFormData({
+            titre: reservation.titre,
+            duree: dureeHeures
+        });
+        setSelectedSlot({
+            date: debut.toISOString().split('T')[0],
+            heure: debut.getHours(),
+            dateDebut: debut
+        });
+        setShowModal(true);
+        setError(null);
+    };
+
     // Sélectionner un horaire depuis la modal
     const selectTimeSlot = (heure) => {
         closeTimeModal();
@@ -121,7 +165,7 @@ export default function Planning() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Créer la réservation
+    // Créer ou modifier la réservation
     const handleCreateReservation = async (e) => {
         e.preventDefault();
 
@@ -137,18 +181,34 @@ export default function Planning() {
             const fin = new Date(debut);
             fin.setHours(debut.getHours() + parseInt(formData.duree));
 
-            await reservationService.create({
+            // Vérifier que le créneau n'est pas dans le passé (sauf en mode édition)
+            if (!isEditing && debut <= new Date()) {
+                setError('Vous ne pouvez pas réserver sur un créneau passé ou en cours');
+                setLoading(false);
+                return;
+            }
+
+            const reservationData = {
                 titre: formData.titre,
                 debut: debut.toISOString(),
                 fin: fin.toISOString()
-            });
+            };
+
+            if (isEditing && editingReservationId) {
+                // MODE ÉDITION
+                await reservationService.update(editingReservationId, reservationData);
+                alert('Réservation modifiée avec succès !');
+            } else {
+                // MODE CRÉATION
+                await reservationService.create(reservationData);
+                alert('Réservation créée avec succès !');
+            }
 
             await loadReservations();
             closeModal();
-            alert('Réservation créée avec succès !');
         } catch (err) {
-            console.error('Erreur création réservation:', err);
-            setError(err.message || 'Erreur lors de la création de la réservation');
+            console.error('Erreur réservation:', err);
+            setError(err.response?.data?.error || err.message || 'Erreur lors de la sauvegarde');
         } finally {
             setLoading(false);
         }
@@ -180,6 +240,14 @@ export default function Planning() {
 
             return (debut < slotEnd && fin > slotDate);
         });
+    };
+
+    // Vérifier si un créneau est dans le passé ou en cours
+    const isSlotPast = (date, heure) => {
+        const slotDate = new Date(date);
+        slotDate.setHours(heure, 0, 0, 0);
+        const maintenant = new Date();
+        return slotDate <= maintenant;
     };
 
     // Choix d'affichage par jour, semaine, mois ou année
@@ -333,6 +401,7 @@ export default function Planning() {
                         {horaires.map((heure) => {
                             const isReserved = isSlotReserved(dateStr, heure);
                             const slotReservations = getReservationsForSlot(dateStr, heure);
+                            const isPast = isSlotPast(dateStr, heure);
                             const isMyReservation = slotReservations.some(res => {
                                 console.log('Comparaison:', { res_users_id: res.users_id, user_id: user?.id, match: Number(res.users_id) === Number(user?.id) });
                                 return Number(res.users_id) === Number(user?.id);
@@ -341,15 +410,15 @@ export default function Planning() {
                             let bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                             if (isReserved) {
                                 bgClass = isMyReservation ? 'bg-amber-200 cursor-not-allowed' : 'bg-red-300 cursor-not-allowed';
-                            } else if (estPasse) {
-                                bgClass = 'bg-red-300 cursor-not-allowed';
+                            } else if (isPast) {
+                                bgClass = 'bg-gray-200 cursor-not-allowed';
                             }
 
                             return (
                                 <div
                                     key={`horaire-${heure}`}
                                     className={`p-4 border border-cyan-200 rounded ${bgClass} transition-colors`}
-                                    onClick={() => !estPasse && !isReserved && openModal(dateStr, heure)}
+                                    onClick={() => !isPast && !isReserved && openModal(dateStr, heure)}
                                 >
                                     <span className="font-semibold text-cyan-700">{heure}h00 - {heure + 1}h00</span>
                                     {isReserved && slotReservations.map(res => (
@@ -405,7 +474,7 @@ export default function Planning() {
                                     </div>
                                     {joursSemaineVue.map((date, index) => {
                                         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                        const estPasse = date < new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), aujourdHui.getDate());
+                                        const isPast = isSlotPast(dateStr, heure);
                                         const isReserved = isSlotReserved(dateStr, heure);
                                         const slotReservations = getReservationsForSlot(dateStr, heure);
                                         const isMyReservation = slotReservations.some(res => {
@@ -417,8 +486,8 @@ export default function Planning() {
                                         let bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                                         if (isReserved) {
                                             bgClass = isMyReservation ? 'bg-amber-200 cursor-pointer hover:bg-amber-300' : 'bg-red-300 cursor-pointer hover:bg-red-400';
-                                        } else if (estPasse) {
-                                            bgClass = 'bg-cyan-200 cursor-not-allowed';
+                                        } else if (isPast) {
+                                            bgClass = 'bg-gray-200 cursor-not-allowed';
                                         }
 
                                         return (
@@ -428,7 +497,7 @@ export default function Planning() {
                                                 onClick={(e) => {
                                                     if (isReserved && slotReservations.length > 0) {
                                                         openDetailsModal(slotReservations[0], e);
-                                                    } else if (!estPasse && !isReserved) {
+                                                    } else if (!isPast && !isReserved) {
                                                         openModal(dateStr, heure);
                                                     }
                                                 }}
@@ -538,10 +607,10 @@ export default function Planning() {
                                         );
                                     })}
 
-                                    {/* Indicateur "+ X more" */}
+                                    {/* Indicateur "+ X plus" */}
                                     {hasMore && (
                                         <div className="text-xs text-cyan-600 font-semibold pl-2">
-                                            + {reservationsJour.length - maxDisplayed} more...
+                                            + {reservationsJour.length - maxDisplayed} plus...
                                         </div>
                                     )}
                                 </div>
@@ -689,7 +758,9 @@ export default function Planning() {
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-800">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-2xl font-bold text-cyan-600">Nouvelle Réservation</h3>
+                            <h3 className="text-2xl font-bold text-cyan-600">
+                                {isEditing ? '✏️ Modifier la réservation' : '📅 Nouvelle Réservation'}
+                            </h3>
                             <button
                                 onClick={closeModal}
                                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -752,17 +823,17 @@ export default function Planning() {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+                                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold cursor-pointer"
                                     disabled={loading}
                                 >
                                     Annuler
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50"
+                                    className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     disabled={loading}
                                 >
-                                    {loading ? 'Réservation...' : 'Confirmer'}
+                                    {loading ? 'Sauvegarde...' : (isEditing ? '💾 Enregistrer' : '✅ Confirmer')}
                                 </button>
                             </div>
                         </form>
@@ -799,6 +870,7 @@ export default function Planning() {
                         <div className="max-h-96 overflow-y-auto space-y-2">
                             {Array.from({ length: 11 }, (_, i) => i + 8).map((heure) => {
                                 const isReserved = isSlotReserved(selectedDate, heure);
+                                const isPast = isSlotPast(selectedDate, heure);
                                 const slotReservations = getReservationsForSlot(selectedDate, heure);
                                 const isMyReservation = slotReservations.some(res => {
                                     console.log('Comparaison modale:', { res_users_id: res.users_id, user_id: user?.id, match: Number(res.users_id) === Number(user?.id) });
@@ -808,13 +880,15 @@ export default function Planning() {
                                 let buttonClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                                 if (isReserved) {
                                     buttonClass = isMyReservation ? 'bg-amber-200 cursor-not-allowed opacity-60' : 'bg-red-300 cursor-not-allowed opacity-60';
+                                } else if (isPast) {
+                                    buttonClass = 'bg-gray-200 cursor-not-allowed opacity-60';
                                 }
 
                                 return (
                                     <button
                                         key={`time-${heure}`}
-                                        onClick={() => !isReserved && selectTimeSlot(heure)}
-                                        disabled={isReserved}
+                                        onClick={() => !isReserved && !isPast && selectTimeSlot(heure)}
+                                        disabled={isReserved || isPast}
                                         className={`w-full p-4 border border-cyan-200 rounded text-left transition-colors ${buttonClass}`}
                                     >
                                         <span className="font-semibold text-cyan-700">
@@ -851,7 +925,7 @@ export default function Planning() {
                             <h3 className="text-2xl font-bold text-cyan-600">Détails de la réservation</h3>
                             <button
                                 onClick={closeDetailsModal}
-                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold hover:scale-110 transition-transform cursor-pointer"
                             >
                                 ×
                             </button>
@@ -925,10 +999,19 @@ export default function Planning() {
                             )}
                         </div>
 
-                        <div className="mt-6">
+                        <div className="mt-6 flex gap-3">
+                            {/* Afficher le bouton Modifier uniquement pour ses propres réservations */}
+                            {Number(selectedReservation.users_id) === Number(user?.id) && (
+                                <button
+                                    onClick={(e) => openEditModal(selectedReservation, e)}
+                                    className="flex-1 px-4 py-2 bg-orange-300 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    ✏️ Modifier
+                                </button>
+                            )}
                             <button
                                 onClick={closeDetailsModal}
-                                className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold"
+                                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold cursor-pointer"
                             >
                                 Fermer
                             </button>

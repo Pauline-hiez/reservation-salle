@@ -106,11 +106,11 @@ export const reservationController = {
         }
     },
 
-    // Mettre à jour une réservation
+    //Modification de réservation
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { titre, description, debut, fin } = req.body;
+            const { titre, debut, fin, description } = req.body;
             const users_id = req.userId;
 
             // Validation des données
@@ -126,27 +126,55 @@ export const reservationController = {
                 return res.status(400).json({ error: 'La date de début doit être avant la date de fin' });
             }
 
-            // Vérifier que la réservation est au minimum d'1 heure
-            const dureeHeures = (dateFin - dateDebut) / (1000 * 60 * 60);
-            if (dureeHeures < 1) {
-                return res.status(400).json({ error: 'La durée minimale de réservation est d\'1 heure' });
+            // Vérifier que la réservation existe
+            const existingReservation = await Reservation.findById(id);
+
+            if (!existingReservation) {
+                return res.status(404).json({ error: 'Réservation non trouvée' });
             }
 
-            const reservation = await Reservation.update(id, {
+            // Vérifier que la réservation appartient à l'utilisateur
+            if (existingReservation.users_id !== users_id) {
+                return res.status(403).json({ error: 'Vous ne pouvez modifier que vos propres réservations' });
+            }
+
+            // Vérifier la disponibilité (en excluant la réservation actuelle)
+            const available = await Reservation.checkAvailability(debut, fin, id);
+
+            if (!available) {
+                return res.status(409).json({ error: 'Cette plage horaire est déjà réservée' });
+            }
+
+            // Mettre à jour la réservation
+            const updatedReservation = await Reservation.update(id, {
                 titre,
-                description: description || '',
                 debut,
                 fin,
+                description: description || existingReservation.description || '',
                 users_id
             });
 
             res.json({
-                message: 'Réservation mise à jour avec succès',
-                reservation
+                message: 'Réservation modifiée avec succès',
+                reservation: updatedReservation
             });
         } catch (error) {
             console.error('Erreur modification réservation:', error);
             res.status(400).json({ error: error.message || 'Erreur lors de la modification de la réservation' });
+        }
+    },
+
+    // Supprimer une réservation
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const users_id = req.userId;
+
+            await Reservation.delete(id, users_id);
+            res.json({ message: 'Réservation supprimée avec succès' });
+        } catch (error) {
+            console.error('Erreur suppression réservation:', error);
+            res.status(400).json({ error: error.message || 'Erreur lors de la suppression de la réservation' });
         }
     },
 

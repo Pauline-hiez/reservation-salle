@@ -24,20 +24,20 @@ function Header() {
                 {isAuthenticated ? (
                     <>
                         <NavLink
-                            to="/profil"
-                            className={({ isActive }) =>
-                                `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
-                            }
-                        >
-                            Mon profil
-                        </NavLink>
-                        <NavLink
                             to="/planning"
                             className={({ isActive }) =>
                                 `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
                             }
                         >
                             Planning
+                        </NavLink>
+                        <NavLink
+                            to="/profil"
+                            className={({ isActive }) =>
+                                `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                            }
+                        >
+                            Mon profil
                         </NavLink>
                     </>
                 ) : (
