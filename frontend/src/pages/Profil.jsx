@@ -103,6 +103,28 @@ function Profil() {
         }
     };
 
+    // Supprimer une réservation
+    const handleDeleteReservation = async (reservation) => {
+        // Demander confirmation
+        const confirmation = window.confirm(
+            `Êtes-vous sûr de vouloir supprimer la réservation "${reservation.titre}" ?`
+        );
+
+        if (!confirmation) return;
+
+        try {
+            setLoading(true);
+            await reservationService.delete(reservation.id);
+            alert('Réservation supprimée avec succès !');
+            await loadReservations();
+        } catch (err) {
+            console.error('Erreur suppression:', err);
+            setError(err.response?.data?.error || 'Erreur lors de la suppression');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
 
     // Fonction pour extraire le nom depuis l'email (partie avant @)
@@ -307,13 +329,23 @@ function Profil() {
                                         </td>
                                         <td className={`${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-center`}>
                                             {!isPast && (
-                                                <button
-                                                    onClick={() => openEditModal(reservation)}
-                                                    className="px-3 py-1 bg-orange-300 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-semibold cursor-pointer"
-                                                    title="Modifier"
-                                                >
-                                                    ✏️ Modifier
-                                                </button>
+                                                <div className="flex gap-2 justify-center">
+                                                    <button
+                                                        onClick={() => openEditModal(reservation)}
+                                                        className="px-3 py-1 text-gray-800 rounded-lg transition-colors text-2xl font-semibold cursor-pointer transform hover:scale-150"
+                                                        title="Modifier"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteReservation(reservation)}
+                                                        className="px-3 py-1 text-red-600 rounded-lg transition-colors text-2xl font-semibold cursor-pointer transform hover:scale-150"
+                                                        title="Supprimer"
+                                                        disabled={loading}
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>

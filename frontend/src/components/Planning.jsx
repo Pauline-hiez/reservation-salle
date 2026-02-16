@@ -214,6 +214,37 @@ export default function Planning() {
         }
     };
 
+    // Supprimer une réservation
+    const handleDeleteReservation = async (reservation, e) => {
+        if (e) e.stopPropagation();
+
+        // Vérifier que c'est bien la réservation de l'utilisateur
+        if (Number(reservation.users_id) !== Number(user?.id)) {
+            setError("Vous ne pouvez supprimer que vos propres réservations");
+            return;
+        }
+
+        // Demander confirmation
+        const confirmation = window.confirm(
+            `Êtes-vous sûr de vouloir supprimer la réservation "${reservation.titre}" ?`
+        );
+
+        if (!confirmation) return;
+
+        try {
+            setLoading(true);
+            await reservationService.delete(reservation.id);
+            alert('Réservation supprimée avec succès !');
+            await loadReservations();
+            closeDetailsModal();
+        } catch (err) {
+            console.error('Erreur suppression:', err);
+            setError(err.response?.data?.error || err.message || 'Erreur lors de la suppression');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Vérifier si un créneau est réservé
     const isSlotReserved = (date, heure) => {
         return reservations.some(reservation => {
@@ -1000,14 +1031,23 @@ export default function Planning() {
                         </div>
 
                         <div className="mt-6 flex gap-3">
-                            {/* Afficher le bouton Modifier uniquement pour ses propres réservations */}
+                            {/* Afficher les boutons Modifier et Supprimer uniquement pour ses propres réservations */}
                             {Number(selectedReservation.users_id) === Number(user?.id) && (
-                                <button
-                                    onClick={(e) => openEditModal(selectedReservation, e)}
-                                    className="flex-1 px-4 py-2 bg-orange-300 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    ✏️ Modifier
-                                </button>
+                                <>
+                                    <button
+                                        onClick={(e) => openEditModal(selectedReservation, e)}
+                                        className="flex-1 px-4 py-2 bg-orange-300 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                                    >
+                                        ✏️ Modifier
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDeleteReservation(selectedReservation, e)}
+                                        className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                                        disabled={loading}
+                                    >
+                                        🗑️ Supprimer
+                                    </button>
+                                </>
                             )}
                             <button
                                 onClick={closeDetailsModal}
