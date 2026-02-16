@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import Header from '../components/Header.jsx';
+import Footer from '../components/Footer.jsx';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -32,7 +33,6 @@ function Login() {
 
     return (
         <>
-            <Header />
             <div className="min-h-screen flex items-start justify-center bg-gradient-to-t from-cyan-100 to-cyan-50 pt-12 pb-12">
                 <div className="bg-cyan-400 backdrop-blur-sm rounded-3xl shadow-2xl p-8 w-full max-w-md">
                     {/* Titre */}

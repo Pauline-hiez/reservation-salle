@@ -24,6 +24,8 @@ function App() {
         {/* Routes AVEC Header + Footer */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/profil" element={
             <PrivateRoute>
               <Profil />
@@ -38,8 +40,7 @@ function App() {
 
         {/* Routes SANS Header (plein écran) */}
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />
