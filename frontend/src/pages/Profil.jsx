@@ -329,7 +329,7 @@ function Profil() {
                                         </td>
                                         <td className={`${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-center`}>
                                             {!isPast && (
-                                                <div className="flex gap-2 justify-center">
+                                                <div className="flex justify-evenly items-center">
                                                     <button
                                                         onClick={() => openEditModal(reservation)}
                                                         className="px-3 py-1 text-gray-800 rounded-lg transition-colors text-2xl font-semibold cursor-pointer transform hover:scale-150"

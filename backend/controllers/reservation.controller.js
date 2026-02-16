@@ -26,6 +26,13 @@ export const reservationController = {
                 return res.status(400).json({ error: 'La durée minimale de réservation est d\'1 heure' });
             }
 
+            // Vérifier que la réservation ne dépasse pas 19h
+            const heureFin = dateFin.getHours();
+            const minutesFin = dateFin.getMinutes();
+            if (heureFin > 19 || (heureFin === 19 && minutesFin > 0)) {
+                return res.status(400).json({ error: 'Les réservations doivent se terminer au plus tard à 19h00' });
+            }
+
             // Vérifier que la réservation est dans le futur
             if (dateDebut < new Date()) {
                 return res.status(400).json({ error: 'Impossible de réserver dans le passé' });
@@ -124,6 +131,13 @@ export const reservationController = {
 
             if (dateDebut >= dateFin) {
                 return res.status(400).json({ error: 'La date de début doit être avant la date de fin' });
+            }
+
+            // Vérifier que la réservation ne dépasse pas 19h
+            const heureFin = dateFin.getHours();
+            const minutesFin = dateFin.getMinutes();
+            if (heureFin > 19 || (heureFin === 19 && minutesFin > 0)) {
+                return res.status(400).json({ error: 'Les réservations doivent se terminer au plus tard à 19h00' });
             }
 
             // Vérifier que la réservation existe

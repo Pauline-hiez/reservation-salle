@@ -844,10 +844,23 @@ export default function Planning() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-500"
                                     required
                                 >
-                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(h => (
-                                        <option key={h} value={h}>{h} heure{h > 1 ? 's' : ''}</option>
-                                    ))}
+                                    {(() => {
+                                        // Calculer la durée maximale selon l'heure de début (fin à 19h)
+                                        const heureDebut = selectedSlot.heure;
+                                        const heureFin = 19; // Les réservations s'arrêtent à 19h
+                                        const dureeMax = heureFin - heureDebut;
+                                        const heuresDisponibles = Array.from({ length: dureeMax }, (_, i) => i + 1);
+
+                                        return heuresDisponibles.map(h => (
+                                            <option key={h} value={h}>{h} heure{h > 1 ? 's' : ''}</option>
+                                        ));
+                                    })()}
                                 </select>
+                                {selectedSlot.heure >= 18 && (
+                                    <p className="text-xs text-orange-600 mt-1">
+                                        ⚠️ Réservation limitée car les réservations se terminent à 19h
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex gap-3">
