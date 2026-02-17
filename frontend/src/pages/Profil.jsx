@@ -344,18 +344,18 @@ function Profil() {
                                                     <div className="flex justify-evenly items-center">
                                                         <button
                                                             onClick={() => openEditModal(reservation)}
-                                                            className="px-2 lg:px-3 py-1 text-gray-800 rounded-lg transition-colors text-xl lg:text-2xl font-semibold cursor-pointer transform hover:scale-150"
+                                                            className="px-2 lg:px-3 py-1 text-gray-800 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
                                                             title="Modifier"
                                                         >
-                                                            ✏️
+                                                            <img src="/assets/icons/update.png" alt="Modifier" className="w-7 h-7 lg:w-8 lg:h-8" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteReservation(reservation)}
-                                                            className="px-2 lg:px-3 py-1 text-red-600 rounded-lg transition-colors text-xl lg:text-2xl font-semibold cursor-pointer transform hover:scale-150"
+                                                            className="px-2 lg:px-3 py-1 text-red-600 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
                                                             title="Supprimer"
                                                             disabled={loading}
                                                         >
-                                                            🗑️
+                                                            <img src="/assets/icons/delete.png" alt="Supprimer" className="w-7 h-7 lg:w-8 lg:h-8" />
                                                         </button>
                                                     </div>
                                                 )}
@@ -405,7 +405,7 @@ function Profil() {
                                                 className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                                 title="Modifier"
                                             >
-                                                ✏️ Modifier
+                                                <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" /> Modifier
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteReservation(reservation)}
@@ -413,7 +413,7 @@ function Profil() {
                                                 title="Supprimer"
                                                 disabled={loading}
                                             >
-                                                🗑️ Supprimer
+                                                <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
                                             </button>
                                         </div>
                                     )}
@@ -429,8 +429,8 @@ function Profil() {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 border-2 border-cyan-950 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-start justify-between mb-4 sm:mb-6">
-                            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-600">
-                                ✏️ Modifier la réservation
+                            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-600 flex items-center gap-2">
+                                <img src="/assets/icons/update.png" alt="Modifier" className="w-8 h-8" /> Modifier la réservation
                             </h3>
                             <button
                                 onClick={closeEditModal}
