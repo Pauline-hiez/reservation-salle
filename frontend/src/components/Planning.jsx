@@ -424,7 +424,7 @@ export default function Planning() {
             <div className="bg-white rounded-lg shadow-xl/30 overflow-hidden mb-8">
                 <div className="p-6">
                     <div className="text-center mb-4">
-                        <h3 className="text-xl font-semibold text-cyan-600">
+                        <h3 className="text-xl font-semibold text-cyan-800">
                             {joursSemaine[dateActuelle.getDay() === 0 ? 6 : dateActuelle.getDay() - 1]}
                         </h3>
                     </div>
@@ -448,10 +448,10 @@ export default function Planning() {
                             return (
                                 <div
                                     key={`horaire-${heure}`}
-                                    className={`p-4 border border-cyan-200 rounded ${bgClass} transition-colors`}
+                                    className={`p-4 border border-cyan-950 rounded ${bgClass} transition-colors`}
                                     onClick={() => !isPast && !isReserved && openModal(dateStr, heure)}
                                 >
-                                    <span className="font-semibold text-cyan-700">{heure}h00 - {heure + 1}h00</span>
+                                    <span className="font-semibold text-cyan-800">{heure}h00 - {heure + 1}h00</span>
                                     {isReserved && slotReservations.map(res => (
                                         <div key={res.id} className="mt-2 text-sm text-cyan-900 font-medium">
                                             🔒 {res.titre}
@@ -477,9 +477,9 @@ export default function Planning() {
             <div className="bg-white rounded-lg shadow-xl/30 overflow-hidden mb-8">
                 <div className="overflow-x-auto">
                     <div className="min-w-full inline-block">
-                        <div className="grid grid-cols-8 border-l border-t border-cyan-800">
+                        <div className="grid grid-cols-8 border-l border-t border-cyan-950">
                             {/* En-tête vide pour la colonne des horaires */}
-                            <div className="bg-cyan-400 text-white font-semibold text-center py-3 border-r border-b border-cyan-800">
+                            <div className="bg-cyan-800 text-white font-semibold text-center py-3 border-r border-b border-cyan-950">
                                 Heure
                             </div>
                             {/* En-têtes des jours */}
@@ -488,8 +488,8 @@ export default function Planning() {
                                 return (
                                     <div
                                         key={`jour-${index}`}
-                                        className={`${estPasse ? 'bg-cyan-300' : 'bg-cyan-400'
-                                            } text-white font-semibold text-center py-3 border-r border-b border-cyan-800`}
+                                        className={`${estPasse ? 'bg-cyan-800' : 'bg-cyan-800'
+                                            } text-white font-semibold text-center py-3 border-r border-b border-cyan-950`}
                                     >
                                         <div>{joursSemaineAbr[index]}</div>
                                         <div className="text-sm">{date.getDate()}/{date.getMonth() + 1}</div>
@@ -500,7 +500,7 @@ export default function Planning() {
                             {/* Lignes des horaires */}
                             {horaires.map((heure) => (
                                 <div key={`horaire-row-${heure}`} className="contents">
-                                    <div className="bg-cyan-50 text-cyan-700 font-medium text-center py-4 border-r border-b border-cyan-800">
+                                    <div className="bg-cyan-50 text-cyan-800 font-medium text-center py-4 border-r border-b border-cyan-950">
                                         {heure}h
                                     </div>
                                     {joursSemaineVue.map((date, index) => {
@@ -524,7 +524,7 @@ export default function Planning() {
                                         return (
                                             <div
                                                 key={`cell-${heure}-${index}`}
-                                                className={`${bgClass} border-r border-b border-cyan-800 h-16 transition-colors relative group`}
+                                                className={`${bgClass} border-r border-b border-cyan-950 h-16 transition-colors relative group`}
                                                 onClick={(e) => {
                                                     if (isReserved && slotReservations.length > 0) {
                                                         openDetailsModal(slotReservations[0], e);
@@ -573,16 +573,16 @@ export default function Planning() {
         }).sort((a, b) => new Date(a.debut) - new Date(b.debut));
     };
 
-    // Rendu de la vue mois (améliorée avec affichage des réservations)
+    // Rendu de la vue mois 
     const renderVueMois = () => {
         return (
-            <div id="calendrier" className="bg-white rounded-lg shadow-xl/30 overflow-hidden text-cyan-600 mb-8">
-                <div className="grid grid-cols-7 border-l border-t border-cyan-800 ">
+            <div id="calendrier" className="bg-white rounded-lg shadow-xl/30 overflow-hidden text-cyan-800 mb-8">
+                <div className="grid grid-cols-7 border-l border-t border-cyan-950 ">
                     {/* En-têtes des jours */}
                     {joursSemaine.map((jour, index) => (
                         <div
                             key={`semaine-${index}`}
-                            className="bg-cyan-400 text-white font-semibold text-center py-3 border-r border-b border-cyan-800"
+                            className="bg-cyan-800 text-white font-semibold text-center py-3 border-r border-b border-cyan-950"
                         >
                             {jour}
                         </div>
@@ -594,7 +594,7 @@ export default function Planning() {
                             return (
                                 <div
                                     key={item.key}
-                                    className="min-h-28 p-2 border-r border-b border-cyan-800 bg-cyan-100 text-cyan-600"
+                                    className="min-h-28 p-2 border-r border-b border-cyan-950 bg-gray-300 text-cyan-950"
                                 >
                                     <span className="text-sm">{item.numero}</span>
                                 </div>
@@ -607,8 +607,8 @@ export default function Planning() {
                         const hasMore = reservationsJour.length > maxDisplayed;
 
                         const cellClass = item.estPasse
-                            ? "min-h-28 p-2 border-r border-b border-cyan-800 bg-cyan-100 text-cyan-600 cursor-not-allowed"
-                            : "min-h-28 p-2 border-r border-b border-cyan-800 bg-white hover:bg-cyan-50 cursor-pointer transition-colors";
+                            ? "min-h-28 p-2 border-r border-b border-cyan-950 bg-gray-400 text-cyan-900 cursor-not-allowed"
+                            : "min-h-28 p-2 border-r border-b border-cyan-950 bg-white hover:bg-cyan-50 cursor-pointer transition-colors";
 
                         return (
                             <div
@@ -673,12 +673,12 @@ export default function Planning() {
                                 setVue('mois');
                             }}
                         >
-                            <h3 className="text-center font-semibold text-cyan-600 mb-2">
+                            <h3 className="text-center font-semibold text-cyan-800 mb-2">
                                 {moisNoms[moisIndex]}
                             </h3>
                             <div className="grid grid-cols-7 gap-1 text-xs">
                                 {joursSemaineAbr.map((jour, index) => (
-                                    <div key={`jour-${index}`} className="text-center text-cyan-500 font-medium">
+                                    <div key={`jour-${index}`} className="text-center text-cyan-800 font-medium">
                                         {jour.charAt(0)}
                                     </div>
                                 ))}
@@ -697,7 +697,7 @@ export default function Planning() {
                                         <div
                                             key={`jour-${jourNum}`}
                                             className={`text-center p-1 rounded ${estAujourdHui
-                                                ? 'bg-cyan-500 text-white font-bold'
+                                                ? 'bg-cyan-800 text-white font-bold'
                                                 : estPasse
                                                     ? 'text-cyan-300'
                                                     : 'text-cyan-600'
@@ -723,8 +723,8 @@ export default function Planning() {
                     <button
                         onClick={() => setVue('jour')}
                         className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${vue === 'jour'
-                            ? 'bg-cyan-500 text-white'
-                            : 'bg-white text-cyan-600 border-2 border-cyan-500 hover:bg-cyan-50'
+                            ? 'bg-cyan-800 text-white'
+                            : 'bg-white text-cyan-800 border-2 border-cyan-950 hover:bg-cyan-50'
                             }`}
                     >
                         Jour
@@ -732,8 +732,8 @@ export default function Planning() {
                     <button
                         onClick={() => setVue('semaine')}
                         className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${vue === 'semaine'
-                            ? 'bg-cyan-500 text-white'
-                            : 'bg-white text-cyan-600 border-2 border-cyan-500 hover:bg-cyan-50'
+                            ? 'bg-cyan-800 text-white'
+                            : 'bg-white text-cyan-800 border-2 border-cyan-950 hover:bg-cyan-50'
                             }`}
                     >
                         Semaine
@@ -741,8 +741,8 @@ export default function Planning() {
                     <button
                         onClick={() => setVue('mois')}
                         className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${vue === 'mois'
-                            ? 'bg-cyan-500 text-white'
-                            : 'bg-white text-cyan-600 border-2 border-cyan-500 hover:bg-cyan-50'
+                            ? 'bg-cyan-800 text-white'
+                            : 'bg-white text-cyan-800 border-2 border-cyan-950 hover:bg-cyan-50'
                             }`}
                     >
                         Mois
@@ -750,8 +750,8 @@ export default function Planning() {
                     <button
                         onClick={() => setVue('annee')}
                         className={`px-4 py-2 rounded-lg font-semibold transition-colors cursor-pointer ${vue === 'annee'
-                            ? 'bg-cyan-500 text-white'
-                            : 'bg-white text-cyan-600 border-2 border-cyan-500 hover:bg-cyan-50'
+                            ? 'bg-cyan-800 text-white'
+                            : 'bg-white text-cyan-800 border-2 border-cyan-950 hover:bg-cyan-50'
                             }`}
                     >
                         Année
@@ -762,16 +762,16 @@ export default function Planning() {
                 <div className="flex items-center justify-between py-6">
                     <button
                         onClick={precedent}
-                        className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md cursor-pointer"
+                        className="bg-cyan-800 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md cursor-pointer"
                     >
                         Précédent
                     </button>
-                    <h2 className="text-3xl font-bold text-cyan-600 text-shadow-lg tracking-widest text-center">
+                    <h2 className="text-3xl font-bold text-cyan-800 text-shadow-lg tracking-widest text-center">
                         {getTitre().toUpperCase()}
                     </h2>
                     <button
                         onClick={suivant}
-                        className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md cursor-pointer"
+                        className="bg-cyan-800 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md cursor-pointer"
                     >
                         Suivant
                     </button>
@@ -787,9 +787,9 @@ export default function Planning() {
             {/* Modal de réservation */}
             {showModal && (
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-800">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-950">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-2xl font-bold text-cyan-600">
+                            <h3 className="text-2xl font-bold text-cyan-800">
                                 {isEditing ? '✏️ Modifier la réservation' : '📅 Nouvelle Réservation'}
                             </h3>
                             <button
@@ -827,7 +827,7 @@ export default function Planning() {
                                     name="titre"
                                     value={formData.titre}
                                     onChange={handleFormChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-950"
                                     placeholder="Ex: Réunion d'équipe"
                                     required
                                 />
@@ -841,7 +841,7 @@ export default function Planning() {
                                     name="duree"
                                     value={formData.duree}
                                     onChange={handleFormChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-950"
                                     required
                                 >
                                     {(() => {
@@ -874,7 +874,7 @@ export default function Planning() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    className="flex-1 px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     disabled={loading}
                                 >
                                     {loading ? 'Sauvegarde...' : (isEditing ? '💾 Enregistrer' : '✅ Confirmer')}
@@ -888,9 +888,9 @@ export default function Planning() {
             {/* Modal de sélection d'horaire (vue mois) */}
             {showTimeModal && selectedDate && (
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-3 border-solid border-cyan-800">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-3 border-solid border-cyan-950">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-2xl font-bold text-cyan-600">Sélectionner un horaire</h3>
+                            <h3 className="text-2xl font-bold text-cyan-800">Sélectionner un horaire</h3>
                             <button
                                 onClick={closeTimeModal}
                                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -933,7 +933,7 @@ export default function Planning() {
                                         key={`time-${heure}`}
                                         onClick={() => !isReserved && !isPast && selectTimeSlot(heure)}
                                         disabled={isReserved || isPast}
-                                        className={`w-full p-4 border border-cyan-200 rounded text-left transition-colors ${buttonClass}`}
+                                        className={`w-full p-4 border border-cyan-950 rounded text-left transition-colors ${buttonClass}`}
                                     >
                                         <span className="font-semibold text-cyan-700">
                                             {heure}h00 - {heure + 1}h00
@@ -964,9 +964,9 @@ export default function Planning() {
             {/* Modal de détails de réservation */}
             {showDetailsModal && selectedReservation && (
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-800">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 border-4 border-solid border-cyan-950">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-2xl font-bold text-cyan-600">Détails de la réservation</h3>
+                            <h3 className="text-2xl font-bold text-cyan-800">Détails de la réservation</h3>
                             <button
                                 onClick={closeDetailsModal}
                                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold hover:scale-110 transition-transform cursor-pointer"
@@ -978,13 +978,13 @@ export default function Planning() {
                         <div className="space-y-4">
                             {/* Titre */}
                             <div className="p-3 bg-cyan-50 rounded">
-                                <p className="text-sm text-cyan-600 font-semibold mb-1">Titre</p>
+                                <p className="text-sm text-cyan-800 font-semibold mb-1">Titre</p>
                                 <p className="text-base text-cyan-900 font-bold">{selectedReservation.titre}</p>
                             </div>
 
                             {/* Date et heure */}
                             <div className="p-3 bg-cyan-50 rounded">
-                                <p className="text-sm text-cyan-600 font-semibold mb-1">Date et heure</p>
+                                <p className="text-sm text-cyan-800 font-semibold mb-1">Date et heure</p>
                                 <div className="text-base text-cyan-900">
                                     <p>
                                         <strong>Début :</strong>{' '}
@@ -1020,7 +1020,7 @@ export default function Planning() {
                             {/* Réservé par */}
                             {selectedReservation.user_name && (
                                 <div className="p-3 bg-cyan-50 rounded">
-                                    <p className="text-sm text-cyan-600 font-semibold mb-1">Réservé par</p>
+                                    <p className="text-sm text-cyan-800 font-semibold mb-1">Réservé par</p>
                                     <p className="text-base text-cyan-900">
                                         👤 {capitalizeWords(selectedReservation.user_name)}
                                     </p>
@@ -1030,7 +1030,7 @@ export default function Planning() {
                             {/* Description si disponible */}
                             {selectedReservation.description && (
                                 <div className="p-3 bg-cyan-50 rounded">
-                                    <p className="text-sm text-cyan-600 font-semibold mb-1">Description</p>
+                                    <p className="text-sm text-cyan-800 font-semibold mb-1">Description</p>
                                     <p className="text-base text-cyan-900">{selectedReservation.description}</p>
                                 </div>
                             )}

@@ -1,6 +1,6 @@
 function Footer() {
     return (
-        <footer className="bg-cyan-500 text-white shadow-[0_-4px_15px_rgba(22,78,99,0.5)]">
+        <footer className="bg-cyan-800 text-white shadow-[0_-4px_15px_rgba(22,78,99,0.5)]">
             <div className="container mx-auto px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Logo Section */}

@@ -244,7 +244,7 @@ function Profil() {
 
             {/* Section informations utilisateur */}
             {user && (
-                <div className="bg-white rounded-lg border-2 border-cyan-800 shadow-xl p-6 mb-8 max-w-2xl mx-auto">
+                <div className="bg-white rounded-lg border-2 border-cyan-950 shadow-xl p-6 mb-8 max-w-2xl mx-auto">
                     {/* Logo en haut centré */}
                     <div className="flex justify-center mb-8">
                         <img src="/assets/img/techspace-logo.webp" alt="Logo TechSpace" className="h-30" />
@@ -278,7 +278,7 @@ function Profil() {
 
                         {/* Image utilisateur à droite */}
                         <div className="flex-shrink-0">
-                            <img src="/assets/icons/user.png" alt="Icône utilisateur" className="w-40 h-40 border-2 border-cyan-600 rounded-full mr-16 mb-10" />
+                            <img src="/assets/icons/user.png" alt="Icône utilisateur" className="w-40 h-40 border-2 border-cyan-950 rounded-full mr-16 mb-10" />
                         </div>
                     </div>
                 </div>
@@ -301,14 +301,14 @@ function Profil() {
             )}
 
             {!loading && !error && reservations.length > 0 && (
-                <div className="overflow-hidden rounded-md border border-cyan-800 shadow-2xl mb-8">
+                <div className="overflow-hidden rounded-md border border-cyan-950 shadow-2xl mb-8">
                     <table className="table-fixed mx-auto w-full">
                         <thead>
                             <tr className="bg-cyan-100">
-                                <th className="border-r border-b border-cyan-800 bg-cyan-300 px-4 py-2 text-cyan-800 text-2xl">Date et heure</th>
-                                <th className="border-r border-b border-cyan-800 bg-cyan-300 px-4 py-2 text-cyan-800 text-2xl">Objet</th>
-                                <th className="border-r border-b border-cyan-800 bg-cyan-300 px-4 py-2 text-cyan-800 text-2xl">Statut</th>
-                                <th className="border-b border-cyan-800 bg-cyan-300 px-4 py-2 text-cyan-800 text-2xl">Actions</th>
+                                <th className="border-r border-b border-cyan-950 bg-cyan-800 px-4 py-2 text-white text-2xl">Date et heure</th>
+                                <th className="border-r border-b border-cyan-950 bg-cyan-800 px-4 py-2 text-white text-2xl">Objet</th>
+                                <th className="border-r border-b border-cyan-950 bg-cyan-800 px-4 py-2 text-white text-2xl">Statut</th>
+                                <th className="border-b border-cyan-950 bg-cyan-800 px-4 py-2 text-white text-2xl">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -320,20 +320,20 @@ function Profil() {
 
                                 return (
                                     <tr key={reservation.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
-                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-center text-cyan-800`}>
+                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-4 py-2 text-center text-cyan-800`}>
                                             <div className="font-bold">{dateTime.time}</div>
                                             <div className="text-sm font-bold">{dateTime.date}</div>
                                         </td>
-                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-cyan-800 text-center font-bold`}>
+                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-4 py-2 text-cyan-800 text-center font-bold`}>
                                             <div>{reservation.titre}</div>
                                             {reservation.description && (
                                                 <div className="text-sm text-gray-600">{reservation.description}</div>
                                             )}
                                         </td>
-                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-center ${status.color}`}>
+                                        <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-4 py-2 text-center ${status.color}`}>
                                             {status.label}
                                         </td>
-                                        <td className={`${!isLast ? 'border-b' : ''} border-cyan-800 px-4 py-2 text-center`}>
+                                        <td className={`${!isLast ? 'border-b' : ''} border-cyan-950 px-4 py-2 text-center`}>
                                             {!isPast && (
                                                 <div className="flex justify-evenly items-center">
                                                     <button
@@ -365,7 +365,7 @@ function Profil() {
             {/* Modal de modification */}
             {showEditModal && editingReservation && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-cyan-800">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-cyan-950">
                         <div className="flex items-start justify-between mb-6">
                             <h3 className="text-2xl font-bold text-cyan-600">
                                 ✏️ Modifier la réservation
@@ -395,7 +395,7 @@ function Profil() {
                                     value={formData.titre}
                                     onChange={handleFormChange}
                                     required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950"
                                 />
                             </div>
 
@@ -409,7 +409,7 @@ function Profil() {
                                     value={formData.debut}
                                     onChange={handleFormChange}
                                     required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950"
                                 />
                             </div>
 
@@ -423,7 +423,7 @@ function Profil() {
                                     value={formData.fin}
                                     onChange={handleFormChange}
                                     required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950"
                                 />
                             </div>
 
@@ -437,7 +437,7 @@ function Profil() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 cursor-pointer"
+                                    className="flex-1 px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 cursor-pointer"
                                     disabled={loading}
                                 >
                                     {loading ? 'Sauvegarde...' : '💾 Enregistrer'}
