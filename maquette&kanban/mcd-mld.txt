@@ -1,0 +1,59 @@
+﻿    MCD
+
+
+Utilisateur :
+id
+email
+password
+created_at
+
+
+Réservation :
+id
+titre
+description
+debut
+fin
+created_at
+user_id
+
+
+Relations : 
+Un utilisateur peut créer plusieurs réservations -> relation 1,N
+Une réservation appartient à un seul utilisateur -> relation 1,1
+
+
+UTILISATEUR (1,N) —— crée —— (1,1) RÉSERVATION
+
+
+Cardinalités : 
+1 utilisateur -> 0.N réservations
+1 réservation -> exactement 1 utilisateur 
+
+
+
+
+    MLD
+
+
+Table utilisateur :
+id (PK)
+email
+password
+created_at
+
+
+Table réservation : 
+id
+titre
+description
+debut
+fin
+created_at
+users_id (FK -> UTILISATEUR.id)
+
+
+Relations : 
+users_id dans RESERVATION -> référence id dans Utilisateur
+Une clé primaire combinée (id, user_id) pour RESERVATION
+Relation : 1 utilisateur -> N réservations

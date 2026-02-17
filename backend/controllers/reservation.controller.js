@@ -38,6 +38,12 @@ export const reservationController = {
                 return res.status(400).json({ error: 'Impossible de réserver dans le passé' });
             }
 
+            // Vérifier que la réservation n'est pas un week-end (samedi ou dimanche)
+            const jourDebut = dateDebut.getDay();
+            if (jourDebut === 0 || jourDebut === 6) {
+                return res.status(400).json({ error: 'Les réservations ne sont possibles que du lundi au vendredi' });
+            }
+
             const reservation = await Reservation.create({
                 titre,
                 description: description || '',
@@ -133,11 +139,28 @@ export const reservationController = {
                 return res.status(400).json({ error: 'La date de début doit être avant la date de fin' });
             }
 
+            // Vérifier que la réservation est au minimum d'1 heure
+            const dureeHeures = (dateFin - dateDebut) / (1000 * 60 * 60);
+            if (dureeHeures < 1) {
+                return res.status(400).json({ error: 'La durée minimale de réservation est d\'1 heure' });
+            }
+
             // Vérifier que la réservation ne dépasse pas 19h
             const heureFin = dateFin.getHours();
             const minutesFin = dateFin.getMinutes();
             if (heureFin > 19 || (heureFin === 19 && minutesFin > 0)) {
                 return res.status(400).json({ error: 'Les réservations doivent se terminer au plus tard à 19h00' });
+            }
+
+            // Vérifier que la réservation est dans le futur
+            if (dateDebut < new Date()) {
+                return res.status(400).json({ error: 'Impossible de réserver dans le passé' });
+            }
+
+            // Vérifier que la réservation n'est pas un week-end (samedi ou dimanche)
+            const jourDebut = dateDebut.getDay();
+            if (jourDebut === 0 || jourDebut === 6) {
+                return res.status(400).json({ error: 'Les réservations ne sont possibles que du lundi au vendredi' });
             }
 
             // Vérifier que la réservation existe
@@ -175,20 +198,6 @@ export const reservationController = {
         } catch (error) {
             console.error('Erreur modification réservation:', error);
             res.status(400).json({ error: error.message || 'Erreur lors de la modification de la réservation' });
-        }
-    },
-
-    // Supprimer une réservation
-    async delete(req, res) {
-        try {
-            const { id } = req.params;
-            const users_id = req.userId;
-
-            await Reservation.delete(id, users_id);
-            res.json({ message: 'Réservation supprimée avec succès' });
-        } catch (error) {
-            console.error('Erreur suppression réservation:', error);
-            res.status(400).json({ error: error.message || 'Erreur lors de la suppression de la réservation' });
         }
     },
 

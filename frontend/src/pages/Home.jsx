@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
 
-export default Home;
-
 function Home() {
     const images = [
-        "/public/assets/img/home1.png",
-        "/public/assets/img/home2.png"
+        "/assets/img/home1.png",
+        "/assets/img/home2.png"
     ];
 
     const salleImages = [
-        "/public/assets/img/salle1.png",
-        "/public/assets/img/salle2.jpeg",
-        "/public/assets/img/salle3.png"
+        "/assets/img/salle1.png",
+        "/assets/img/salle2.jpeg",
+        "/assets/img/salle3.png"
     ];
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,7 +36,7 @@ function Home() {
             {/* Logo TechSpace */}
             <div className="container mx-auto px-4 py-8 md:py-12 lg:py-16">
                 <img
-                    src="/public/assets/img/techspace-logo.webp"
+                    src="/assets/img/techspace-logo.webp"
                     alt="Logo TechSpace"
                     className="w-64 sm:w-80 md:w-100 h-auto mx-auto"
                 />
@@ -110,3 +108,5 @@ function Home() {
         </div>
     );
 }
+
+export default Home;

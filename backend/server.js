@@ -1,4 +1,4 @@
-import 'dotenv/config';                    //  Syntaxe ES Module pour dotenv ⬅️
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { testConnection } from './config/db.js';
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Routes
 app.get('/', (req, res) => {
-    res.json({ message: 'Starter Kit API (ES Modules)', status: 'online' });
+    res.json({ message: 'API Réservation de Salle TechSpace', status: 'online' });
 });
 
 /*

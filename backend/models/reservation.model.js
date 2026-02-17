@@ -1,9 +1,21 @@
 import { query } from '../config/db.js';
 
-// Fonction pour convertir une date ISO en format MySQL
+// Fonction pour convertir une date ISO en format MySQL (sans conversion UTC)
 const formatDateForMySQL = (isoDate) => {
+    // Si la date est déjà au format MySQL, la retourner tel quel
+    if (typeof isoDate === 'string' && isoDate.includes(' ')) {
+        return isoDate;
+    }
+
     const date = new Date(isoDate);
-    return date.toISOString().slice(0, 19).replace('T', ' ');
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
 const Reservation = {

@@ -1,0 +1,631 @@
+﻿User Case :
+
+
+Inscription utilisateur :
+
+
+Titre : Inscription d'un utilisateur au site
+Acteur : Utilisateur non-enregistré
+
+
+Préconditions : 
+* Etre membre de l’entreprise (et vouloir travailler)
+* Avoir une adresse email valide
+* L’utilisateur ne possède pas de compte utilisateur
+
+
+Scénario nominal (succès) :
+1. L'utilisateur clique sur "S’inscrire"
+2. Le système affiche le formulaire d’inscription
+3. L'utilisateur saisit son email et son mot de passe
+4. L'utilisateur clique sur "S’inscrire"
+5. Le système vérifie si les identifiants ne sont pas déjà utilisés
+6. Le système redirige vers la page de connexion
+
+
+Scénario alternatif : 
+
+
+
+
+Scénario d’erreur : 
+5a1. Le système affiche “Email déjà utilisé”
+5a2. Retour au point 3
+5a3. Le système affiche “Essayez un autre e-mail ou contactez le support”
+
+
+Postconditions :
+* L’utilisateur peut maintenant consulter le planning et faire une réservation
+* L’utilisateur peut accéder à son profil
+
+
+
+
+
+
+Connexion utilisateur :
+
+
+Titre : Connexion d'un utilisateur au site
+Acteur : Utilisateur enregistré
+
+
+Préconditions :
+*  L'utilisateur possède un compte
+*  L'utilisateur n'est pas déjà connecté
+
+
+Scénario nominal (succès) :
+1. L'utilisateur clique sur "Se connecter"
+2. Le système affiche le formulaire de connexion
+3. L'utilisateur saisit son email et son mot de passe
+4. L'utilisateur clique sur "Valider"
+5. Le système vérifie les identifiants
+6. Le système crée une session pour l'utilisateur
+7. Le système redirige vers la page d'accueil connectée
+8. Le système affiche un message de bienvenue
+
+
+Scénarios alternatifs :
+
+
+
+
+Scénarios d'erreur :
+5a. Email ou mot de passe incorrect
+5a1. Le système affiche "Identifiants incorrects"
+5a2. Retour au point 3
+5b. Le compte est bloqué
+5b1. Le système affiche "Compte suspendu, contactez le support"
+
+
+
+
+Postconditions :
+*  L'utilisateur est connecté
+*  Une session est créée dans le système
+*  L'utilisateur voit son profil dans la navbar
+
+
+
+
+Visualisation du planning:
+ 
+Titre : Consultation du planning des réservations
+Acteur : Utilisateur enregistré et connecté
+Préconditions :
+* L'utilisateur possède un compte
+*  L'utilisateur est connecté à l'application
+*  Le planning des réservations existe dans le système
+Scénario nominal (succès) :
+1. L'utilisateur accède à la page "Planning"
+2. Le système affiche le planning de la semaine en cours (du lundi au vendredi)
+3. Le système affiche les créneaux horaires de 8h00 à 19h00
+4. Le système affiche les créneaux disponibles et les créneaux déjà réservés
+5. Le système affiche, pour chaque créneau réservé, le nom du réservataire et l'objet de la réunion
+6. L'utilisateur consulte les disponibilités de la salle
+
+Scénarios alternatifs :
+2a. L'utilisateur navigue vers une autre semaine
+         2a1. L'utilisateur utilise les boutons "Semaine suivante" ou "Semaine précédente"
+         2a2. Le système affiche le planning correspondant à la semaine sélectionnée
+         2a3. Retour au point 3
+Scénarios d'erreur :
+2b. Impossible de récupérer les données du planning
+        2b1. Le système affiche "Erreur lors du chargement du planning"
+        2b2. Le système propose de recharger la page
+        2b3. Fin du use case
+Postconditions :
+   *  L'utilisateur visualise les réservations existantes
+   *  L'utilisateur peut identifier les créneaux disponibles 
+   *  L'utilisateur peut réserver sur un créneaux disponible (voir réservation utilisateur)
+   * Aucune modification des données n'est effectuée
+
+
+
+
+Réservations utilisateur :
+ 
+Titre : Réservation d’une place
+Acteur : Utilisateur enregistré
+Préconditions :
+   *  L'utilisateur possède un compte
+   *  L'utilisateur est/ou n’est pas déjà connecté
+
+
+Scénario nominal (succès) :
+
+
+1. L’utilisateur se rend dans l’onglet “Réservation” (Voir UseCase visualisation)
+2. Le système affiche les disponibilités de la salle
+3. L’utilisateur choisi son créneaux horaire (1h minimum, 8h - 19h du lundi au vendredi)
+4. L'utilisateur clique sur "Valider"
+5. Le système vérifie les données utilisateurs et de réservations
+6. L’utilisateur confirme la réservation via un bouton
+7. Le système affiche “Réservation enregistrée”
+
+
+Scénarios alternatifs :
+8a. L’utilisateur clique sur le bouton “modifier”
+8a1. L’utilisateur choisit un nouveau créneau horaire
+8a2. L’utilisateur confirme en cliquant sur “Confirmer”
+8a3. Le système affiche “Modification enregistrée”
+9b. L’utilisateur clique sur le bouton “annulation”
+9b1. L’utilisateur confirme son annulation via un bouton
+9b2. Le système affiche “Annulation confirmé”
+
+
+Scénarios d'erreur :
+10a. Email ou mot de passe incorrect
+10a1. Le système affiche "Identifiants incorrects"
+10a2. Le compte est bloqué
+10a3. Le système affiche "Compte suspendu, contactez le support"
+11a1. Le créneau réservé n’est pas disponible
+
+
+
+
+Postconditions :
+- L’utilisateur peut consulter son profil pour gérer ses réservations
+- L’utilisateur conserve un historique de ses réservations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+User Story
+
+
+US-01 | Must | Inscription 
+En tant que visiteur, je veux créer un compte, afin de pouvoir réserver une salle.
+
+
+Critères d’acceptation : 
+Le formulaire contient : email, mot de passe, confirmation de mot de passe, bouton de validation
+Le mot de passe fait min 6 caractères
+Mot de passe hashé en base de donnée
+Les deux mots de passe doivent correspondre
+Si l’email existe déjà -> Message d’erreur
+Inscription réussie -> redirection vers connexion
+
+
+
+
+US-02 | Must | Connexion
+En tant qu’utilisateur, je veux me connecter, afin d’avoir accès à mes réservations.
+
+
+
+
+Critères d’acceptation : 
+Le formulaire contient : email, mot de passe, bouton de validation
+Les identifiants doivent être les même que lors de l’inscription sinon “identifiants incorrects”
+Connexion réussie -> Redirection vers planning + Bienvenue *Utilisateur” 
+
+
+
+
+US-03 | Should | Profil
+En tant qu’utilisateur, je veux voir mon profil, afin d’avoir accès à mes réservations.
+
+
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Affichage des réservations (en cours et à venir)
+Gestion des réservations (annulation et modification)
+
+
+
+
+US-04 | Should | Déconnexion
+En tant qu’utilisateur, je veux pouvoir me déconnecter, afin de fermer ma session.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Un bouton de déconnexion en navbar ou flottant dans le body
+Une fois déconnecté, redirection vers formulaire de connexion
+Suppression de la session dans le LocalStorage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+US-05 | Must | Réservation
+En tant qu’utilisateur, je veux réserver une salle, afin de travailler correctement.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+L’utilisateur accède au planning de réservation
+L’utilisateur doit pouvoir voir les disponibilités de la salle
+Il doit pouvoir cliquer sur une date et une heure (1h minimum)
+Il ajoute un objet à la réservation
+Ajout d’un bouton de réservation avec confirmation
+
+
+
+
+US-06 | Should | Planning
+En tant qu’utilisateur, je veux voir le planning, afin de voir les disponibilités.
+
+
+Critères d’acceptation :
+L’utilisateur accède au planning
+L’utilisateur voit les disponibilités de la salle
+Il voit toutes les réservations ainsi que les personnes ayant réservé.
+Code couleur par disponibilités/Mes réservations
+
+
+
+
+US-07 | Should | Modification de réservation
+En tant qu’utilisateur, je veux modifier ma réservation, afin de gérer les imprévus.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Sur la page planning ou profil, bouton de modification (date, heure, objet)
+Confirmation de réservation
+Résumé de la modification
+Historique sur la page profil
+
+
+
+
+US-08 | Should | Annulation réservation
+En tant qu’utilisateur, je veux annuler ma réservation, afin de ne pas bloquer les autres en cas d’empêchement.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Sur le planning ou page profil, bouton de suppression de réservation
+Confirmation d’annulation
+Message de confirmation d’annulation
+
+
+
+
+
+
+
+
+
+
+
+
+US-09 | Should | Annulation réservation
+En tant qu’utilisateur, je veux annuler ma réservation, afin de ne pas bloquer les autres en cas d’empêchement.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Sur le planning ou page profil, bouton de suppression de réservation
+Confirmation d’annulation
+Message de confirmation d’annulation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Cahier des charges du projet
+
+
+   1. Synopsis
+Une entreprise en coworking, d’une cinquantaine d’employés, demande un site de réservation pour leur salle de réunion d’une capacité de 12 personnes.
+
+
+Les employés doivent se connecter à leur profil afin de réserver la salle en indiquant l’objet de la réservation ainsi que la date et l’heure.
+
+
+Disponibilité -> Du lundi au vendredi de 8h à 19h pour une durée minimale de 1h.
+   2. Cahier des charges Client Front-end
+Cahier des Charges Fonctionnel : 
+
+
+US-01 | Must | Inscription 
+En tant que visiteur, je veux créer un compte, afin de pouvoir réserver une salle.
+
+
+Critères d’acceptation : 
+Le formulaire contient : email, mot de passe, confirmation de mot de passe, bouton de validation
+Le mot de passe fait min 6 caractères
+Les deux mots de passe doivent correspondre
+Si l’email existe déjà -> Message d’erreur
+Redirection automatique vers la page de connexion après inscription réussie
+
+
+
+
+US-02 | Must | Connexion
+En tant qu’utilisateur, je veux me connecter, afin d’avoir accès à mes réservations.
+
+
+Critères d’acceptation : 
+Le formulaire contient : email, mot de passe, bouton de validation
+Les identifiants doivent être les même que lors de l’inscription sinon “identifiants incorrects”
+Connexion réussie -> Redirection vers planning 
+
+
+
+
+US-03 | Should | Profil
+En tant qu’utilisateur, je veux voir mon profil, afin d’avoir accès à mes réservations.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Gestion des réservations (annulation et modification)
+
+
+
+
+
+
+
+
+US-04 | Should | Déconnexion
+En tant qu’utilisateur, je veux pouvoir me déconnecter, afin de fermer ma session.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Un bouton de déconnexion en navbar ou flottant dans le body
+Une fois déconnecté, redirection vers formulaire de connexion
+Bouton de déconnexion visible sur toutes les pages connectées
+
+
+
+
+US-05 | Should | Planning
+En tant qu’utilisateur, je veux voir le planning, afin de voir les disponibilités.
+
+
+Critères d’acceptation :
+L’utilisateur accède au planning
+L’utilisateur voit les disponibilités de la salle
+Il voit toutes les réservations ainsi que les personnes ayant réservé.
+Code couleur par disponibilités/Mes réservations
+Bouton "Réserver" visible uniquement si la salle est disponible
+Interface pour marquer une salle comme disponible
+
+
+
+
+
+
+US-06 | Must | Réservation
+En tant qu’utilisateur, je veux réserver une salle, afin de travailler correctement.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+L’utilisateur accède au planning de réservation
+L’utilisateur doit pouvoir voir les disponibilités de la salle
+Il doit pouvoir cliquer sur une date et une heure (1h minimum)
+Il ajoute un objet à la réservation
+Ajout d’un bouton de réservation avec confirmation
+Affichage des réservations (en cours et à venir)
+
+
+
+
+US-07 | Should | Modification de réservation
+En tant qu’utilisateur, je veux modifier ma réservation, afin de gérer les imprévus.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Sur la page planning ou profil, bouton de modification (date, heure, objet)
+Confirmation de réservation
+Résumé de la modification
+
+
+
+
+
+
+
+
+
+
+
+
+US-08 | Should | Annulation réservation
+En tant qu’utilisateur, je veux annuler ma réservation, afin de ne pas bloquer les autres en cas d’empêchement.
+
+
+Critères d’acceptation :
+L’utilisateur doit être connecté
+Sur le planning ou page profil, bouton de suppression de réservation
+Confirmation d’annulation
+Message de confirmation d’annulation
+
+
+
+
+   3. Cahier des charges Client Backend
+Cahier des Charges Fonctionnel :
+
+
+US-01 | Must | Inscription 
+En tant que visiteur, je veux créer un compte, afin de pouvoir réserver une salle.
+
+
+Critères d’acceptation : 
+Création de la base de données
+Mot de passe hashé
+Mot de passe avec 6 caractères minimum
+Enregistrement des données dans la database
+Email unique en base de données
+Redirection vers la page de connexion si tentative d'accès à une page protégée
+Format email valide
+
+
+
+
+US-02 | Must | Connexion
+En tant qu’utilisateur, je veux me connecter, afin d’avoir accès à mes réservations.
+
+
+Critères d’acceptation : 
+Compare les identifiants dans la base de données
+Accepte ou refuse la connexion
+Connexion sécurisée
+Maintien de la session utilisateur
+Stockage du token d’autorisation dans le LocalStorage
+
+
+
+
+US-03 | Should | Profil
+En tant qu’utilisateur, je veux voir mon profil, afin d’avoir accès à mes réservations.
+
+
+Critères d’acceptation :
+Enregistrement des données dans la database
+
+
+
+
+US-04 | Should | Déconnexion
+En tant qu’utilisateur, je veux pouvoir me déconnecter, afin de fermer ma session.
+
+
+Critères d’acceptation :
+Suppression de la session dans le LocalStorage
+Destruction du Token 
+
+
+
+
+US-05 | Should | Planning
+En tant qu’utilisateur, je veux voir le planning, afin de voir les disponibilités.
+
+
+Critères d’acceptation :
+Gestion du calendrier actuel
+
+
+
+
+US-06 | Must | Réservation
+En tant qu’utilisateur, je veux réserver une salle, afin de travailler correctement.
+
+
+Critères d’acceptation :
+Connexion à la base de données
+Automatisation du créneau horaire avec 1h minimum
+Impossible de réserver une salle déjà réservée
+Calcul automatique du temps de réservation
+Mise à jour automatique du statut de la salle
+La salle est disponible qu’une fois par créneau horaire
+
+
+
+
+US-07 | Should | Modification de réservation
+En tant qu’utilisateur, je veux modifier ma réservation, afin de gérer les imprévus.
+
+
+Critères d’acceptation :
+Modification en base de données
+
+
+
+
+US-08 | Should | Annulation réservation
+En tant qu’utilisateur, je veux annuler ma réservation, afin de ne pas bloquer les autres en cas d’empêchement.
+
+
+Critères d’acceptation :
+Suppression de la réservation en base de données

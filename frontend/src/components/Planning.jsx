@@ -67,13 +67,21 @@ export default function Planning() {
 
     // Ouvrir la modal de réservation
     const openModal = (date, heure) => {
-        const dateDebut = new Date(date);
-        dateDebut.setHours(heure, 0, 0, 0);
+        // Construire la date en heure locale pour éviter les problèmes de fuseau horaire
+        const [annee, mois, jour] = date.split('-').map(Number);
+        const dateDebut = new Date(annee, mois - 1, jour, heure, 0, 0, 0);
 
         // Vérifier si le créneau est dans le passé
         const maintenant = new Date();
         if (dateDebut <= maintenant) {
             setError('Vous ne pouvez pas réserver sur un créneau passé ou en cours');
+            return;
+        }
+
+        // Vérifier si c'est un week-end
+        const jourSemaine = dateDebut.getDay();
+        if (jourSemaine === 0 || jourSemaine === 6) {
+            setError('Les réservations ne sont possibles que du lundi au vendredi');
             return;
         }
 
@@ -144,8 +152,10 @@ export default function Planning() {
             titre: reservation.titre,
             duree: dureeHeures
         });
+        // Construire la date en format local
+        const dateStr = `${debut.getFullYear()}-${String(debut.getMonth() + 1).padStart(2, '0')}-${String(debut.getDate()).padStart(2, '0')}`;
         setSelectedSlot({
-            date: debut.toISOString().split('T')[0],
+            date: dateStr,
             heure: debut.getHours(),
             dateDebut: debut
         });
@@ -157,6 +167,17 @@ export default function Planning() {
     const selectTimeSlot = (heure) => {
         closeTimeModal();
         openModal(selectedDate, heure);
+    };
+
+    // Fonction pour formater une date en ISO sans conversion UTC
+    const formatDateLocal = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
 
     // Gérer les changements dans le formulaire
@@ -181,17 +202,25 @@ export default function Planning() {
             const fin = new Date(debut);
             fin.setHours(debut.getHours() + parseInt(formData.duree));
 
-            // Vérifier que le créneau n'est pas dans le passé (sauf en mode édition)
-            if (!isEditing && debut <= new Date()) {
+            // Vérifier que le créneau n'est pas dans le passé
+            if (debut <= new Date()) {
                 setError('Vous ne pouvez pas réserver sur un créneau passé ou en cours');
+                setLoading(false);
+                return;
+            }
+
+            // Vérifier que ce n'est pas un week-end
+            const jourSemaine = debut.getDay();
+            if (jourSemaine === 0 || jourSemaine === 6) {
+                setError('Les réservations ne sont possibles que du lundi au vendredi');
                 setLoading(false);
                 return;
             }
 
             const reservationData = {
                 titre: formData.titre,
-                debut: debut.toISOString(),
-                fin: fin.toISOString()
+                debut: formatDateLocal(debut),
+                fin: formatDateLocal(fin)
             };
 
             if (isEditing && editingReservationId) {
@@ -250,10 +279,10 @@ export default function Planning() {
         return reservations.some(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
-            const slotDate = new Date(date);
-            slotDate.setHours(heure, 0, 0, 0);
-            const slotEnd = new Date(slotDate);
-            slotEnd.setHours(heure + 1, 0, 0, 0);
+            // Construire la date en heure locale
+            const [annee, mois, jour] = date.split('-').map(Number);
+            const slotDate = new Date(annee, mois - 1, jour, heure, 0, 0, 0);
+            const slotEnd = new Date(annee, mois - 1, jour, heure + 1, 0, 0, 0);
 
             return (debut < slotEnd && fin > slotDate);
         });
@@ -264,10 +293,10 @@ export default function Planning() {
         return reservations.filter(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
-            const slotDate = new Date(date);
-            slotDate.setHours(heure, 0, 0, 0);
-            const slotEnd = new Date(slotDate);
-            slotEnd.setHours(heure + 1, 0, 0, 0);
+            // Construire la date en heure locale
+            const [annee, mois, jour] = date.split('-').map(Number);
+            const slotDate = new Date(annee, mois - 1, jour, heure, 0, 0, 0);
+            const slotEnd = new Date(annee, mois - 1, jour, heure + 1, 0, 0, 0);
 
             return (debut < slotEnd && fin > slotDate);
         });
@@ -275,10 +304,19 @@ export default function Planning() {
 
     // Vérifier si un créneau est dans le passé ou en cours
     const isSlotPast = (date, heure) => {
-        const slotDate = new Date(date);
-        slotDate.setHours(heure, 0, 0, 0);
+        // Construire la date en heure locale pour éviter les problèmes de fuseau horaire
+        const [annee, mois, jour] = date.split('-').map(Number);
+        const slotDate = new Date(annee, mois - 1, jour, heure, 0, 0, 0);
         const maintenant = new Date();
         return slotDate <= maintenant;
+    };
+
+    // Vérifier si une date est un week-end (samedi ou dimanche)
+    const isWeekend = (date) => {
+        const [annee, mois, jour] = date.split('-').map(Number);
+        const dateObj = new Date(annee, mois - 1, jour);
+        const dayOfWeek = dateObj.getDay();
+        return dayOfWeek === 0 || dayOfWeek === 6; // 0 = dimanche, 6 = samedi
     };
 
     // Choix d'affichage par jour, semaine, mois ou année
@@ -403,8 +441,8 @@ export default function Planning() {
         });
     }
 
-    // Compléter avec les jours du mois suivant pour remplir la grille
-    const joursRestants = 42 - jours.length; // 6 semaines * 7 jours
+    // Compléter avec les jours du mois suivant pour remplir seulement la dernière semaine
+    const joursRestants = (7 - (jours.length % 7)) % 7; // Compléter jusqu'au prochain multiple de 7
     for (let i = 1; i <= joursRestants; i++) {
         jours.push({
             type: 'autre-mois',
@@ -433,16 +471,18 @@ export default function Planning() {
                             const isReserved = isSlotReserved(dateStr, heure);
                             const slotReservations = getReservationsForSlot(dateStr, heure);
                             const isPast = isSlotPast(dateStr, heure);
+                            const isWeekendDay = isWeekend(dateStr);
                             const isMyReservation = slotReservations.some(res => {
-                                console.log('Comparaison:', { res_users_id: res.users_id, user_id: user?.id, match: Number(res.users_id) === Number(user?.id) });
                                 return Number(res.users_id) === Number(user?.id);
                             });
 
-                            let bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
+                            let bgClass = '';
                             if (isReserved) {
                                 bgClass = isMyReservation ? 'bg-amber-200 cursor-pointer hover:bg-amber-300' : 'bg-red-300 cursor-pointer hover:bg-red-400';
-                            } else if (isPast) {
+                            } else if (isPast || isWeekendDay) {
                                 bgClass = 'bg-gray-200 cursor-not-allowed';
+                            } else {
+                                bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                             }
 
                             return (
@@ -452,7 +492,7 @@ export default function Planning() {
                                     onClick={(e) => {
                                         if (isReserved && slotReservations.length > 0) {
                                             openDetailsModal(slotReservations[0], e);
-                                        } else if (!isPast && !isReserved) {
+                                        } else if (!isPast && !isWeekendDay && !isReserved) {
                                             openModal(dateStr, heure);
                                         }
                                     }}
@@ -512,19 +552,21 @@ export default function Planning() {
                                     {joursSemaineVue.map((date, index) => {
                                         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                                         const isPast = isSlotPast(dateStr, heure);
+                                        const isWeekendDay = isWeekend(dateStr);
                                         const isReserved = isSlotReserved(dateStr, heure);
                                         const slotReservations = getReservationsForSlot(dateStr, heure);
                                         const isMyReservation = slotReservations.some(res => {
-                                            console.log('Comparaison semaine:', { res_users_id: res.users_id, user_id: user?.id, match: Number(res.users_id) === Number(user?.id) });
                                             return Number(res.users_id) === Number(user?.id);
                                         });
 
                                         // Déterminer la classe CSS selon l'état
-                                        let bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
+                                        let bgClass = '';
                                         if (isReserved) {
                                             bgClass = isMyReservation ? 'bg-amber-200 cursor-pointer hover:bg-amber-300' : 'bg-red-300 cursor-pointer hover:bg-red-400';
-                                        } else if (isPast) {
+                                        } else if (isPast || isWeekendDay) {
                                             bgClass = 'bg-gray-200 cursor-not-allowed';
+                                        } else {
+                                            bgClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                                         }
 
                                         return (
@@ -534,7 +576,7 @@ export default function Planning() {
                                                 onClick={(e) => {
                                                     if (isReserved && slotReservations.length > 0) {
                                                         openDetailsModal(slotReservations[0], e);
-                                                    } else if (!isPast && !isReserved) {
+                                                    } else if (!isPast && !isWeekendDay && !isReserved) {
                                                         openModal(dateStr, heure);
                                                     }
                                                 }}
@@ -612,15 +654,21 @@ export default function Planning() {
                         const maxDisplayed = 3; // Nombre max d'événements affichés
                         const hasMore = reservationsJour.length > maxDisplayed;
 
-                        const cellClass = item.estPasse
-                            ? "min-h-28 p-2 border-r border-b border-cyan-950 bg-gray-400 text-cyan-900 cursor-not-allowed"
-                            : "min-h-28 p-2 border-r border-b border-cyan-950 bg-white hover:bg-cyan-50 cursor-pointer transition-colors";
+                        // Vérifier si c'est un week-end
+                        const isWeekendDay = isWeekend(item.date);
+
+                        let cellClass = '';
+                        if (item.estPasse || isWeekendDay) {
+                            cellClass = "min-h-28 p-2 border-r border-b border-cyan-950 bg-gray-400 text-cyan-900 cursor-not-allowed";
+                        } else {
+                            cellClass = "min-h-28 p-2 border-r border-b border-cyan-950 bg-white hover:bg-cyan-50 cursor-pointer transition-colors";
+                        }
 
                         return (
                             <div
                                 key={item.key}
                                 className={cellClass}
-                                onClick={() => !item.estPasse && openTimeSelectionModal(item.date)}
+                                onClick={() => !item.estPasse && !isWeekendDay && openTimeSelectionModal(item.date)}
                             >
                                 <div className="font-semibold text-sm mb-1">{item.numero}</div>
 
@@ -923,24 +971,29 @@ export default function Planning() {
                             {Array.from({ length: 11 }, (_, i) => i + 8).map((heure) => {
                                 const isReserved = isSlotReserved(selectedDate, heure);
                                 const isPast = isSlotPast(selectedDate, heure);
+                                const isWeekendDay = isWeekend(selectedDate);
                                 const slotReservations = getReservationsForSlot(selectedDate, heure);
                                 const isMyReservation = slotReservations.some(res => {
-                                    console.log('Comparaison modale:', { res_users_id: res.users_id, user_id: user?.id, match: Number(res.users_id) === Number(user?.id) });
                                     return Number(res.users_id) === Number(user?.id);
                                 });
 
-                                let buttonClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
+                                let buttonClass = '';
                                 if (isReserved) {
-                                    buttonClass = isMyReservation ? 'bg-amber-200 cursor-not-allowed opacity-60' : 'bg-red-300 cursor-not-allowed opacity-60';
-                                } else if (isPast) {
+                                    buttonClass = 'bg-amber-200 cursor-not-allowed opacity-60';
+                                    if (!isMyReservation) {
+                                        buttonClass = 'bg-red-300 cursor-not-allowed opacity-60';
+                                    }
+                                } else if (isPast || isWeekendDay) {
                                     buttonClass = 'bg-gray-200 cursor-not-allowed opacity-60';
+                                } else {
+                                    buttonClass = 'bg-white hover:bg-cyan-50 cursor-pointer';
                                 }
 
                                 return (
                                     <button
                                         key={`time-${heure}`}
-                                        onClick={() => !isReserved && !isPast && selectTimeSlot(heure)}
-                                        disabled={isReserved || isPast}
+                                        onClick={() => !isReserved && !isPast && !isWeekendDay && selectTimeSlot(heure)}
+                                        disabled={isReserved || isPast || isWeekendDay}
                                         className={`w-full p-2 sm:p-3 md:p-4 border border-cyan-950 rounded text-left transition-colors ${buttonClass}`}
                                     >
                                         <span className="font-semibold text-cyan-700 text-sm sm:text-base">
