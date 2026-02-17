@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function Home() {
     const images = [
@@ -97,8 +98,8 @@ function Home() {
                             <div className="flex-1 text-center lg:text-left order-2">
                                 <h2 className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl leading-relaxed">
                                     Pour optimisez votre espace de travail, nous mettons à votre disposition une salle de réunion
-                                    d'une capacité de 12 personnes. Créez votre compte, connectez-vous et réservez ! Retrouvez
-                                    toutes vos réservations sur votre page profil, modifiez-les ou annulez-les.
+                                    d'une capacité de 12 personnes. <Link to="/register" className="underline hover:text-cyan-800 transition-colors"><br /> Créez votre compte</Link>, <Link to="/login" className="underline hover:text-cyan-800 transition-colors">connectez-vous</Link> et réservez de puis <Link to="/planning" className="underline hover:text-cyan-800 transition-colors">le planning</Link> ! Retrouvez
+                                    toutes vos réservations sur votre page <Link to="/profile" className="underline hover:text-cyan-800 transition-colors">profil</Link>, modifiez-les ou annulez-les. <br /> Du lundi au vendredi et de 8h à 19h.
                                 </h2>
                             </div>
                         </div>
