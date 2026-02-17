@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 
-function DecoButton() {
+function DecoButton({ isMobile = false }) {
     const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -11,6 +11,23 @@ function DecoButton() {
         logout();
         navigate('/login');
     };
+
+    if (isMobile) {
+        return (
+            <button
+                onClick={handleLogout}
+                className="hover:opacity-80 transition-opacity cursor-pointer py-2 flex items-center gap-2"
+                title="Se déconnecter"
+            >
+                <img
+                    src="/assets/icons/deco.png"
+                    alt="Déconnexion"
+                    className="w-8 h-8 invert"
+                />
+
+            </button>
+        );
+    }
 
     return (
         <button
