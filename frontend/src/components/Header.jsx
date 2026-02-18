@@ -24,11 +24,11 @@ function Header() {
                 </Link>
 
                 {/* Navigation desktop (cachée sur mobile) */}
-                <nav className="hidden lg:flex flex-1 justify-center gap-6 xl:gap-8 text-lg xl:text-2xl">
+                <nav className="hidden lg:flex flex-1 justify-center gap-20 xl:gap-22 text-lg xl:text-2xl">
                     <NavLink
                         to="/"
                         className={({ isActive }) =>
-                            `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                            `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
                         }
                     >
                         Accueil
@@ -38,7 +38,7 @@ function Header() {
                             <NavLink
                                 to="/planning"
                                 className={({ isActive }) =>
-                                    `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                                    `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
                                 }
                             >
                                 Planning
@@ -46,7 +46,7 @@ function Header() {
                             <NavLink
                                 to="/profil"
                                 className={({ isActive }) =>
-                                    `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                                    `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
                                 }
                             >
                                 Mon profil
@@ -58,7 +58,7 @@ function Header() {
                             <NavLink
                                 to="/register"
                                 className={({ isActive }) =>
-                                    `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                                    `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
                                 }
                             >
                                 S'inscrire
@@ -66,7 +66,7 @@ function Header() {
                             <NavLink
                                 to="/login"
                                 className={({ isActive }) =>
-                                    `hover:text-cyan-100 transition-colors ${isActive ? 'font-semibold' : ''}`
+                                    `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
                                 }
                             >
                                 Se connecter
@@ -98,12 +98,12 @@ function Header() {
                     className={`fixed top-0 right-0 h-full w-64 bg-cyan-800 shadow-2xl transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex flex-col pt-20 px-6 space-y-6 text-xl">
+                    <div className="flex flex-col pt-20 px-6 space-y-8 text-xl">
                         <NavLink
                             to="/"
                             onClick={closeMobileMenu}
                             className={({ isActive }) =>
-                                `hover:text-cyan-100 transition-colors py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                `inline-block hover:text-cyan-100 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
                             }
                         >
                             Accueil
@@ -114,7 +114,7 @@ function Header() {
                                     to="/planning"
                                     onClick={closeMobileMenu}
                                     className={({ isActive }) =>
-                                        `hover:text-cyan-100 transition-colors py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                        `inline-block hover:text-cyan-100 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
                                     }
                                 >
                                     Planning
@@ -123,7 +123,7 @@ function Header() {
                                     to="/profil"
                                     onClick={closeMobileMenu}
                                     className={({ isActive }) =>
-                                        `hover:text-cyan-100 transition-colors py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                        `inline-block hover:text-cyan-100 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
                                     }
                                 >
                                     Mon profil
@@ -138,7 +138,7 @@ function Header() {
                                     to="/register"
                                     onClick={closeMobileMenu}
                                     className={({ isActive }) =>
-                                        `hover:text-cyan-100 transition-colors py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                        `inline-block hover:text-cyan-950 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
                                     }
                                 >
                                     S'inscrire
@@ -147,7 +147,7 @@ function Header() {
                                     to="/login"
                                     onClick={closeMobileMenu}
                                     className={({ isActive }) =>
-                                        `hover:text-cyan-100 transition-colors py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                        `inline-block hover:text-cyan-950 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
                                     }
                                 >
                                     Se connecter

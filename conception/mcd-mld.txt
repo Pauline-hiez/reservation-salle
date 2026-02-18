@@ -5,7 +5,6 @@ Utilisateur :
 id
 email
 password
-created_at
 
 
 Réservation :
@@ -14,8 +13,6 @@ titre
 description
 debut
 fin
-created_at
-user_id
 
 
 Relations : 

@@ -38,7 +38,7 @@ function DecoButton({ isMobile = false }) {
             <img
                 src="/assets/icons/deco.png"
                 alt="Déconnexion"
-                className="w-10 h-10 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] invert transition-transform hover:scale-110 absolute inset-y-0 right-0 w-12 h-12 mr-10 mt-4"
+                className="w-10 h-10 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] invert transition-transform hover:scale-125 absolute inset-y-0 right-0 w-12 h-12 mr-10 mt-4"
             />
         </button>
     );
