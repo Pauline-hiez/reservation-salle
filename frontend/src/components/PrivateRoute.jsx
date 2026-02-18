@@ -6,7 +6,11 @@ function PrivateRoute({ children }) {
     const location = useLocation();
 
     if (loading) {
-        return <div><p>Chargement...</p></div>;
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <Spinner />
+            </div>
+        );
     }
 
     if (!isAuthenticated) {

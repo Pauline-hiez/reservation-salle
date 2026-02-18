@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { reservationService, authService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import Spinner from '../components/Spinner';
 
 const Admin = () => {
     const { user } = useAuth();
@@ -8,7 +9,6 @@ const Admin = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [deleteError, setDeleteError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
     // États pour la modification des réservations
@@ -28,6 +28,16 @@ const Admin = () => {
         role: '',
         password: ''
     });
+
+    // États pour l'affichage accordéon mobile
+    const [showReservationsTable, setShowReservationsTable] = useState(false);
+    const [showUsersTable, setShowUsersTable] = useState(false);
+
+    // Fonction utilitaire pour afficher un message temporaire
+    const showTemporaryMessage = (setter, message, duration = 3000) => {
+        setter(message);
+        setTimeout(() => setter(null), duration);
+    };
 
     useEffect(() => {
         const loadData = async () => {
@@ -65,15 +75,11 @@ const Admin = () => {
         }
 
         try {
-            setDeleteError(null);
             await reservationService.delete(id);
-            setSuccessMessage('Réservation supprimée avec succès');
-            setTimeout(() => setSuccessMessage(''), 3000);
-            // Rafraîchir la liste
+            showTemporaryMessage(setSuccessMessage, 'Réservation supprimée avec succès');
             fetchReservations();
         } catch (err) {
-            setDeleteError(err.message || 'Erreur lors de la suppression');
-            setTimeout(() => setDeleteError(null), 3000);
+            showTemporaryMessage(setError, err.message || 'Erreur lors de la suppression');
         }
     };
 
@@ -84,14 +90,11 @@ const Admin = () => {
         }
 
         try {
-            setDeleteError(null);
             await authService.deleteUser(id);
-            setSuccessMessage('Utilisateur supprimé avec succès');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            showTemporaryMessage(setSuccessMessage, 'Utilisateur supprimé avec succès');
             fetchUsers();
         } catch (err) {
-            setDeleteError(err.message || 'Erreur lors de la suppression');
-            setTimeout(() => setDeleteError(null), 3000);
+            showTemporaryMessage(setError, err.message || 'Erreur lors de la suppression');
         }
     };
 
@@ -145,8 +148,7 @@ const Admin = () => {
             }
 
             await authService.updateUser(editingUser.id, updateData);
-            setSuccessMessage('Utilisateur modifié avec succès !');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            showTemporaryMessage(setSuccessMessage, 'Utilisateur modifié avec succès !');
             await fetchUsers();
             closeEditUserModal();
         } catch (err) {
@@ -214,8 +216,7 @@ const Admin = () => {
                 fin: new Date(formData.fin).toISOString()
             });
 
-            setSuccessMessage('Réservation modifiée avec succès !');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            showTemporaryMessage(setSuccessMessage, 'Réservation modifiée avec succès !');
             await fetchReservations();
             closeEditModal();
         } catch (err) {
@@ -237,6 +238,30 @@ const Admin = () => {
         });
     };
 
+    // Fonction pour formater la date et l'heure (comme dans Profil)
+    const formatDateTime = (debut, fin) => {
+        const dateDebut = new Date(debut);
+        const dateFin = new Date(fin);
+
+        const dateStr = dateDebut.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
+            hour: 'numeric',
+            minute: '2-digit'
+        }).replace(':', 'h');
+
+        const heureFin = dateFin.toLocaleTimeString('fr-FR', {
+            hour: 'numeric',
+            minute: '2-digit'
+        }).replace(':', 'h');
+
+        return { time: `${heureDebut} - ${heureFin}`, date: dateStr };
+    };
+
     // Fonction pour capitaliser chaque mot
     const capitalizeWords = (str) => {
         if (!str) return '';
@@ -247,8 +272,8 @@ const Admin = () => {
 
     if (loading) {
         return (
-            <div className="container mx-auto px-4 py-6 md:py-8">
-                <p className="text-center text-gray-600">Chargement des réservations...</p>
+            <div className="container mx-auto px-4 py-6 md:py-8 flex justify-center items-center min-h-[50vh]">
+                <Spinner />
             </div>
         );
     }
@@ -273,11 +298,6 @@ const Admin = () => {
                     {successMessage}
                 </div>
             )}
-            {deleteError && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center text-sm md:text-base">
-                    {deleteError}
-                </div>
-            )}
 
             {/* Cartes de statistiques */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8 max-w-4xl mx-auto">
@@ -299,7 +319,13 @@ const Admin = () => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
                 {/* Section Réservations */}
                 <div className="overflow-x-auto">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center">Réservations</h2>
+                    <h2 
+                        className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block"
+                        onClick={() => setShowReservationsTable(!showReservationsTable)}
+                    >
+                        <span>Réservations</span>
+                        <span className="md:hidden text-xl">{showReservationsTable ? '▼' : '▶'}</span>
+                    </h2>
 
                     {reservations.length === 0 ? (
                         <p className="text-center text-gray-600 text-sm md:text-base">Aucune réservation trouvée</p>
@@ -311,8 +337,7 @@ const Admin = () => {
                                     <thead>
                                         <tr className="bg-cyan-100">
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Titre</th>
-                                            <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Début</th>
-                                            <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Fin</th>
+                                            <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Date et heure</th>
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Utilisateur</th>
                                             <th className="border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Actions</th>
                                 </tr>
@@ -320,16 +345,15 @@ const Admin = () => {
                             <tbody>
                                 {reservations.map((reservation, index) => {
                                     const isLast = index === reservations.length - 1;
+                                    const dateTime = formatDateTime(reservation.debut, reservation.fin);
                                     return (
                                         <tr key={reservation.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
                                             <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-cyan-800 text-center font-bold text-xs lg:text-sm whitespace-nowrap`}>
                                                 {reservation.titre}
                                             </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {formatDate(reservation.debut)}
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {formatDate(reservation.fin)}
+                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs lg:text-sm`}>
+                                                <div className="font-bold">{dateTime.time}</div>
+                                                <div className="font-bold">{dateTime.date}</div>
                                             </td>
                                             <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
                                                 {capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}
@@ -360,8 +384,11 @@ const Admin = () => {
                     </div>
 
                     {/* Vue mobile (cards) */}
-                    <div className="md:hidden space-y-4 mb-8">
-                        {reservations.map((reservation) => (
+                    {showReservationsTable && (
+                        <div className="md:hidden space-y-4 mb-8">
+                        {reservations.map((reservation) => {
+                            const dateTime = formatDateTime(reservation.debut, reservation.fin);
+                            return (
                             <div key={reservation.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg p-4">
                                 <div className="mb-3">
                                     <h3 className="text-lg font-bold text-cyan-800">{reservation.titre}</h3>
@@ -369,12 +396,12 @@ const Admin = () => {
 
                                 <div className="space-y-2 mb-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Début :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{formatDate(reservation.debut)}</span>
+                                        <span className="text-sm text-gray-600 font-semibold">Date :</span>
+                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.date}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Fin :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{formatDate(reservation.fin)}</span>
+                                        <span className="text-sm text-gray-600 font-semibold">Horaire :</span>
+                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.time}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-gray-600 font-semibold">Utilisateur :</span>
@@ -392,22 +419,30 @@ const Admin = () => {
                                     </button>
                                     <button
                                         onClick={() => handleDelete(reservation.id)}
-                                        className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                        className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                         title="Supprimer"
                                     >
                                         <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        );
+                        })}
                     </div>
+                    )}
                 </>
             )}
                 </div>
 
                 {/* Section Utilisateurs */}
                 <div className="overflow-x-auto">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center">Utilisateurs</h2>
+                    <h2 
+                        className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block"
+                        onClick={() => setShowUsersTable(!showUsersTable)}
+                    >
+                        <span>Utilisateurs</span>
+                        <span className="md:hidden text-xl">{showUsersTable ? '▼' : '▶'}</span>
+                    </h2>
 
                     {users.length === 0 ? (
                         <p className="text-center text-gray-600 text-sm md:text-base">Aucun utilisateur trouvé</p>
@@ -480,7 +515,8 @@ const Admin = () => {
                     </div>
 
                     {/* Vue mobile (cards) */}
-                    <div className="md:hidden space-y-4 mb-8">
+                    {showUsersTable && (
+                        <div className="md:hidden space-y-4 mb-8">
                         {users.map((utilisateur) => {
                             const inscriptionDate = new Date(utilisateur.created_at).toLocaleDateString('fr-FR', {
                                 day: '2-digit',
@@ -500,7 +536,7 @@ const Admin = () => {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 font-semibold">Rôle :</span>
-                                            <span className={`text-sm font-bold px-2 py-1 rounded ${utilisateur.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                                            <span className={`text-sm font-bold px-2 py-1 rounded ${utilisateur.role === 'admin' ? 'text-cyan-800' : 'bg-gray-100 text-gray-700'}`}>
                                                 {utilisateur.role}
                                             </span>
                                         </div>
@@ -520,7 +556,7 @@ const Admin = () => {
                                         </button>
                                         <button
                                             onClick={() => handleDeleteUser(utilisateur.id)}
-                                            className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Supprimer"
                                             disabled={utilisateur.id === user?.id}
                                         >
@@ -531,6 +567,7 @@ const Admin = () => {
                             );
                         })}
                     </div>
+                    )}
                 </>
             )}
                 </div>

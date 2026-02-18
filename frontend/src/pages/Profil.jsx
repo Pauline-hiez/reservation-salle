@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { reservationService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import Spinner from '../components/Spinner';
 
 function Profil() {
     const { user } = useAuth();
@@ -291,7 +292,9 @@ function Profil() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyan-800 mb-4 md:mb-6 text-center">Mes réservations</h2>
 
             {loading && (
-                <p className="text-center text-gray-600">Chargement des réservations...</p>
+                <div className="flex justify-center py-8">
+                    <Spinner />
+                </div>
             )}
 
             {error && (

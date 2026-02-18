@@ -1,12 +1,17 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import Spinner from './Spinner.jsx';
 
 function AdminRoute({ children }) {
     const { user, isAuthenticated, loading } = useAuth();
     const location = useLocation();
 
     if (loading) {
-        return <div><p>Chargement...</p></div>;
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <Spinner />
+            </div>
+        );
     }
 
     if (!isAuthenticated) {
@@ -14,13 +19,7 @@ function AdminRoute({ children }) {
     }
 
     if (user?.role !== 'admin') {
-        return (
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
-                <h2>Accès refusé</h2>
-                <p>Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
-                <p>Seuls les administrateurs peuvent accéder à cette section.</p>
-            </div>
-        );
+        return <Navigate to="/" replace />;
     }
 
     return children;

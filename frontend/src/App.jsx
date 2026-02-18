@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth.js';
 import MainLayout from './layouts/MainLayout.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
+import Spinner from './components/Spinner.jsx';
 
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
@@ -15,7 +16,11 @@ import Admin from './pages/Admin.jsx';
 function App() {
   const { loading } = useAuth();
 
-  if (loading) return <div><p>Chargement...</p></div>;
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Spinner />
+    </div>
+  );
 
   return (
     <>
