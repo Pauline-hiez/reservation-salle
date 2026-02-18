@@ -108,7 +108,7 @@ const Reservation = {
     },
 
     // Mettre à jour une réservation
-    async update(id, { titre, description, debut, fin, users_id }) {
+    async update(id, { titre, description, debut, fin, users_id }, isAdmin = false) {
         // Convertir les dates au format MySQL
         const debutFormatted = formatDateForMySQL(debut);
         const finFormatted = formatDateForMySQL(fin);
@@ -128,12 +128,16 @@ const Reservation = {
             throw new Error('Cette plage horaire est déjà réservée');
         }
 
-        const sql = `
-            UPDATE reservations 
-            SET titre = ?, description = ?, debut = ?, fin = ?
-            WHERE id = ? AND users_id = ?
-        `;
-        const result = await query(sql, [titre, description, debutFormatted, finFormatted, id, users_id]);
+        // Si c'est un admin, pas besoin de vérifier users_id
+        const sql = isAdmin
+            ? `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ? WHERE id = ?`
+            : `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ? WHERE id = ? AND users_id = ?`;
+        
+        const params = isAdmin
+            ? [titre, description, debutFormatted, finFormatted, id]
+            : [titre, description, debutFormatted, finFormatted, id, users_id];
+        
+        const result = await query(sql, params);
 
         if (result.affectedRows === 0) {
             throw new Error('Réservation non trouvée ou non autorisée');
@@ -143,9 +147,14 @@ const Reservation = {
     },
 
     // Supprimer une réservation
-    async delete(id, users_id) {
-        const sql = `DELETE FROM reservations WHERE id = ? AND users_id = ?`;
-        const result = await query(sql, [id, users_id]);
+    async delete(id, users_id, isAdmin = false) {
+        // Si c'est un admin, pas besoin de vérifier users_id
+        const sql = isAdmin
+            ? `DELETE FROM reservations WHERE id = ?`
+            : `DELETE FROM reservations WHERE id = ? AND users_id = ?`;
+        
+        const params = isAdmin ? [id] : [id, users_id];
+        const result = await query(sql, params);
 
         if (result.affectedRows === 0) {
             throw new Error('Réservation non trouvée ou non autorisée');

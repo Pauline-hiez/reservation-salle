@@ -170,8 +170,9 @@ export const reservationController = {
                 return res.status(404).json({ error: 'Réservation non trouvée' });
             }
 
-            // Vérifier que la réservation appartient à l'utilisateur
-            if (existingReservation.users_id !== users_id) {
+            // Vérifier que la réservation appartient à l'utilisateur (sauf pour les admins)
+            const isAdmin = req.userRole === 'admin';
+            if (!isAdmin && existingReservation.users_id !== users_id) {
                 return res.status(403).json({ error: 'Vous ne pouvez modifier que vos propres réservations' });
             }
 
@@ -189,7 +190,7 @@ export const reservationController = {
                 fin,
                 description: description || existingReservation.description || '',
                 users_id
-            });
+            }, isAdmin);
 
             res.json({
                 message: 'Réservation modifiée avec succès',
@@ -206,8 +207,9 @@ export const reservationController = {
         try {
             const { id } = req.params;
             const users_id = req.userId;
+            const isAdmin = req.userRole === 'admin';
 
-            await Reservation.delete(id, users_id);
+            await Reservation.delete(id, users_id, isAdmin);
             res.json({ message: 'Réservation supprimée avec succès' });
         } catch (error) {
             console.error('Erreur suppression réservation:', error);
