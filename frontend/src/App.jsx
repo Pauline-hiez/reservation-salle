@@ -3,12 +3,14 @@ import { useAuth } from './hooks/useAuth.js';
 
 import MainLayout from './layouts/MainLayout.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import AdminRoute from './components/AdminRoute.jsx';
 
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Planning from './pages/Planning.jsx';
 import Profil from './pages/Profil.jsx';
+import Admin from './pages/Admin.jsx';
 
 function App() {
   const { loading } = useAuth();
@@ -32,6 +34,11 @@ function App() {
             <PrivateRoute>
               <Planning />
             </PrivateRoute>
+          } />
+          <Route path="/admin" element={
+            <AdminRoute>
+              <Admin />
+            </AdminRoute>
           } />
         </Route>
 

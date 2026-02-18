@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import DecoButton from './DecoButton.jsx';
 
 function Header() {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const toggleMobileMenu = () => {
@@ -51,6 +51,16 @@ function Header() {
                             >
                                 Mon profil
                             </NavLink>
+                            {user?.role === 'admin' && (
+                                <NavLink
+                                    to="/admin"
+                                    className={({ isActive }) =>
+                                        `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
+                                    }
+                                >
+                                   🛠️ Admin
+                                </NavLink>
+                            )}
                             <DecoButton />
                         </>
                     ) : (
@@ -128,6 +138,17 @@ function Header() {
                                 >
                                     Mon profil
                                 </NavLink>
+                                {user?.role === 'admin' && (
+                                    <NavLink
+                                        to="/admin"
+                                        onClick={closeMobileMenu}
+                                        className={({ isActive }) =>
+                                            `inline-block hover:text-cyan-100 hover:scale-125 transition-all py-2 ${isActive ? 'font-semibold border-b-2 border-cyan-100' : ''}`
+                                        }
+                                    >
+                                        Admin
+                                    </NavLink>
+                                )}
                                 <div onClick={closeMobileMenu}>
                                     <DecoButton isMobile={true} />
                                 </div>

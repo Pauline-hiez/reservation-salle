@@ -31,7 +31,17 @@ export const authService = {
         method: 'POST',
         body: JSON.stringify({ email, password })
     }),
-    getProfile: () => fetchAPI('/auth/me')
+    getProfile: () => fetchAPI('/auth/me'),
+    getAllUsers: () => fetchAPI('/auth/users'),
+    
+    updateUser: (id, userData) => fetchAPI(`/auth/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(userData)
+    }),
+    
+    deleteUser: (id) => fetchAPI(`/auth/users/${id}`, {
+        method: 'DELETE'
+    })
 };
 
 export const reservationService = {
