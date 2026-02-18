@@ -581,6 +581,7 @@ const Admin = () => {
                                         <tr className="bg-cyan-100">
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Titre</th>
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Date et heure</th>
+                                            <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Salle</th>
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Utilisateur</th>
                                             <th className="border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Actions</th>
                                 </tr>
@@ -597,6 +598,9 @@ const Admin = () => {
                                             <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs lg:text-sm`}>
                                                 <div className="font-bold">{dateTime.time}</div>
                                                 <div className="font-bold">{dateTime.date}</div>
+                                            </td>
+                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
+                                                {reservation.salle_nom || 'N/A'}
                                             </td>
                                             <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
                                                 {capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}
@@ -645,6 +649,10 @@ const Admin = () => {
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-gray-600 font-semibold">Horaire :</span>
                                         <span className="text-sm text-cyan-800 font-bold">{dateTime.time}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600 font-semibold">Salle :</span>
+                                        <span className="text-sm text-cyan-800 font-bold">{reservation.salle_nom || 'N/A'}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-gray-600 font-semibold">Utilisateur :</span>
@@ -859,13 +867,13 @@ const Admin = () => {
                                         <div className="flex gap-2 pt-3 border-t border-gray-200">
                                             <button
                                                 onClick={() => openEditSalleModal(salle)}
-                                                className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                                className="flex-1 px-3 py-2 text-gray-800 rounded-lg transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                             >
                                                 <img src="/assets/icons/update.png" alt="Modifier" className="w-5 h-5" /> Modifier
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteSalle(salle.id)}
-                                                className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                                className="flex-1 px-3 py-2 text-red-600 rounded-lg transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                             >
                                                 <img src="/assets/icons/delete.png" alt="Supprimer" className="w-5 h-5" /> Supprimer
                                             </button>
@@ -1101,7 +1109,7 @@ const Admin = () => {
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 border-2 border-cyan-950 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-start justify-between mb-4 sm:mb-6">
                             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-600 flex items-center gap-2">
-                                <span className="text-2xl">➕</span> Ajouter une salle
+                                <img src="/assets/icons/add.svg" alt="Ajouter" className="w-6 h-6 stroke-cyan-800" style={{ filter: 'invert(24%) sepia(72%) saturate(2038%) hue-rotate(166deg) brightness(95%) contrast(101%)' }} /> Ajouter une salle
                             </h3>
                             <button
                                 onClick={closeAddSalleModal}

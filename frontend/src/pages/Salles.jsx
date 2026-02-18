@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { salleService } from '../services/api';
 import Spinner from '../components/Spinner';
 
 export default function Salles() {
+    const navigate = useNavigate();
     const [salles, setSalles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -72,7 +74,8 @@ export default function Salles() {
                     {salles.map((salle) => (
                         <div 
                             key={salle.id} 
-                            className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-cyan-950 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                            onClick={() => navigate(`/planning?salle=${salle.id}`)}
+                            className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-cyan-950 hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer"
                         >
                             {/* Image de la salle */}
                             <div className="relative h-64 overflow-hidden">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { salleService } from '../services/api';
 
 function Home() {
     const images = [
@@ -7,7 +8,8 @@ function Home() {
         "/assets/img/home2.png"
     ];
 
-    const salleImages = [
+    // Images par défaut si l'API ne retourne rien
+    const defaultSalleImages = [
         "/assets/img/salle1.png",
         "/assets/img/salle2-2.jpg",
         "/assets/img/salle3-3.jpg"
@@ -15,6 +17,49 @@ function Home() {
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentSalleIndex, setCurrentSalleIndex] = useState(0);
+    const [salleImages, setSalleImages] = useState(defaultSalleImages);
+
+    // Charger les images des salles depuis l'API
+    useEffect(() => {
+        const loadSalles = async () => {
+            try {
+                const salles = await salleService.getAll();
+                console.log('Salles reçues de l\'API:', salles);
+                
+                if (salles && salles.length > 0) {
+                    // Filtrer les salles qui ont une image et construire les URLs correctes
+                    const imagesFromAPI = salles
+                        .filter(salle => salle.image)
+                        .map(salle => {
+                            // Si l'image commence par /uploads, utiliser l'URL complète du backend
+                            if (salle.image.startsWith('/uploads')) {
+                                return `http://localhost:5000${salle.image}`;
+                            }
+                            // Sinon, si c'est juste un nom de fichier, ajouter le chemin des assets
+                            else if (!salle.image.startsWith('/') && !salle.image.startsWith('http')) {
+                                return `/assets/img/${salle.image}`;
+                            }
+                            // Sinon, utiliser l'image telle quelle
+                            return salle.image;
+                        });
+                    
+                    console.log('Images construites:', imagesFromAPI);
+                    
+                    // Utiliser les images de l'API si disponibles, sinon garder les images par défaut
+                    if (imagesFromAPI.length > 0) {
+                        console.log('Images chargées depuis l\'API:', imagesFromAPI);
+                        setSalleImages(imagesFromAPI);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des salles:', error);
+                // En cas d'erreur (ex: non connecté), on garde les images par défaut
+                // Les images par défaut sont déjà définies dans le state initial
+            }
+        };
+
+        loadSalles();
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -82,6 +127,7 @@ function Home() {
                             {/* Image carousel */}
                             <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-sm xl:max-w-md flex-shrink-0 order-1 lg:-my-8 xl:-my-10">
                                 <div className="relative w-full aspect-square overflow-hidden rounded-xl shadow-2xl">
+                                    {console.log('Rendu du slider avec', salleImages.length, 'images:', salleImages)}
                                     {salleImages.map((image, index) => (
                                         <img
                                             key={index}
@@ -89,6 +135,7 @@ function Home() {
                                             alt={`Salle ${index + 1}`}
                                             className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentSalleIndex ? 'opacity-100' : 'opacity-0'
                                                 }`}
+                                            onError={(e) => console.error('Erreur de chargement de l\'image:', image)}
                                         />
                                     ))}
                                 </div>
@@ -97,7 +144,7 @@ function Home() {
                             {/* Texte */}
                             <div className="flex-1 text-center lg:text-left order-2">
                                 <h2 className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl leading-relaxed">
-                                    Pour optimisez votre espace de travail, nous mettons à votre disposition plusieurs <Link to="/salles" className="underline hover:text-cyan-800 transition-colors">salles</Link> de réunions avec des capacités différentes. <Link to="/register" className="underline hover:text-cyan-800 transition-colors"><br /> Créez votre compte</Link>, <Link to="/login" className="underline hover:text-cyan-800 transition-colors">connectez-vous</Link> et réservez de puis <Link to="/planning" className="underline hover:text-cyan-800 transition-colors">le planning</Link> ! Retrouvez
+                                    Pour optimisez votre espace de travail, nous mettons à votre disposition plusieurs <Link to="/salles" className="underline hover:text-cyan-800 transition-colors">salles</Link> de réunions avec des capacités différentes. <Link to="/register" className="underline hover:text-cyan-800 transition-colors"><br /> Créez votre compte</Link>, <Link to="/login" className="underline hover:text-cyan-800 transition-colors">connectez-vous</Link> et réservez depuis <Link to="/planning" className="underline hover:text-cyan-800 transition-colors">le planning</Link> ! Retrouvez
                                     toutes vos réservations sur votre page <Link to="/profil" className="underline hover:text-cyan-800 transition-colors">profil</Link>, modifiez-les ou annulez-les. <br /> Du lundi au vendredi et de 8h à 19h.
                                 </h2>
                             </div>

@@ -6,9 +6,9 @@ import upload from '../config/upload.js';
 
 const router = express.Router();
 
-// Routes publiques (accessible à tous les utilisateurs connectés)
-router.get('/', authMiddleware, salleController.getAll);
-router.get('/:id', authMiddleware, salleController.getById);
+// Routes publiques (accessible à tous sans authentification)
+router.get('/', salleController.getAll);
+router.get('/:id', salleController.getById);
 
 // Routes admin uniquement
 router.post('/upload', authMiddleware, adminMiddleware, upload.single('image'), salleController.uploadImage);

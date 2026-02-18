@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { reservationService, salleService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Planning() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const salleIdFromUrl = searchParams.get('salle');
+    
     const moisNoms = [
         'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -19,6 +23,7 @@ export default function Planning() {
     // États pour les réservations
     const [reservations, setReservations] = useState([]);
     const [salles, setSalles] = useState([]);
+    const [salleSelectionnee, setSalleSelectionnee] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showTimeModal, setShowTimeModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -80,6 +85,11 @@ export default function Planning() {
         try {
             const data = await salleService.getAll();
             setSalles(data);
+            // Si un ID de salle est dans l'URL, trouver et sélectionner cette salle
+            if (salleIdFromUrl) {
+                const salle = data.find(s => s.id === parseInt(salleIdFromUrl));
+                setSalleSelectionnee(salle || null);
+            }
         } catch (err) {
             console.error('Erreur chargement salles:', err);
         }
@@ -106,7 +116,9 @@ export default function Planning() {
         }
 
         setSelectedSlot({ date, heure, dateDebut });
-        setFormData({ titre: '', duree: 1, salle_id: salles.length > 0 ? salles[0].id : '' });
+        // Pré-sélectionner la salle filtrée si elle existe, sinon la première salle
+        const defaultSalleId = salleSelectionnee ? salleSelectionnee.id : (salles.length > 0 ? salles[0].id : '');
+        setFormData({ titre: '', duree: 1, salle_id: defaultSalleId });
         setShowModal(true);
         setError(null);
     };
@@ -303,7 +315,14 @@ export default function Planning() {
 
     // Vérifier si un créneau est réservé
     const isSlotReserved = (date, heure) => {
-        return reservations.some(reservation => {
+        let filteredReservations = reservations;
+        
+        // Filtrer par salle si une salle est sélectionnée
+        if (salleSelectionnee) {
+            filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
+        }
+        
+        return filteredReservations.some(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
             // Construire la date en heure locale
@@ -317,7 +336,14 @@ export default function Planning() {
 
     // Obtenir les réservations pour un créneau
     const getReservationsForSlot = (date, heure) => {
-        return reservations.filter(reservation => {
+        let filteredReservations = reservations;
+        
+        // Filtrer par salle si une salle est sélectionnée
+        if (salleSelectionnee) {
+            filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
+        }
+        
+        return filteredReservations.filter(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
             // Construire la date en heure locale
@@ -639,7 +665,14 @@ export default function Planning() {
 
     // Obtenir les réservations pour un jour spécifique
     const getReservationsForDay = (dateStr) => {
-        return reservations.filter(reservation => {
+        let filteredReservations = reservations;
+        
+        // Filtrer par salle si une salle est sélectionnée
+        if (salleSelectionnee) {
+            filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
+        }
+        
+        return filteredReservations.filter(reservation => {
             const debut = new Date(reservation.debut);
             const dateJour = new Date(dateStr + "T00:00:00");
             const dateJourFin = new Date(dateStr + "T23:59:59");
@@ -799,6 +832,36 @@ export default function Planning() {
     return (
         <div id="calendrier-container" className="w-full flex flex-col items-center justify-center px-2 sm:px-4 py-4 sm:py-8">
             <div className={`w-full ${vue === 'annee' ? 'max-w-6xl' : 'max-w-4xl'}`}>
+                {/* Badge de filtre par salle */}
+                {salleSelectionnee && (
+                    <div className="mb-4 sm:mb-6 flex justify-center">
+                        <div className="bg-cyan-100 border-2 border-cyan-800 rounded-lg px-3 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+                            {salleSelectionnee.image && (
+                                <img 
+                                    src={getImageUrl(salleSelectionnee.image)} 
+                                    alt={salleSelectionnee.nom}
+                                    className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded"
+                                />
+                            )}
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs sm:text-sm md:text-base font-bold text-cyan-800">
+                                    🏢 Salle : {salleSelectionnee.nom}
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        setSalleSelectionnee(null);
+                                        setSearchParams({});
+                                    }}
+                                    className="ml-2 bg-cyan-800 hover:bg-cyan-600 text-white font-bold py-1 px-2 sm:px-3 rounded transition-colors text-xs sm:text-sm cursor-pointer"
+                                    title="Afficher toutes les salles"
+                                >
+                                    ✕ Effacer le filtre
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Sélecteur de vue */}
                 <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
                     <button

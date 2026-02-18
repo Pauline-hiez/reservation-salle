@@ -206,6 +206,30 @@ const Reservation = {
             ORDER BY r.debut ASC
         `;
         return await query(sql, [salle_id]);
+    },
+
+    // Vérifier si un utilisateur a déjà une réservation qui chevauche le créneau demandé
+    async checkUserAvailability(debut, fin, users_id, excludeId = null) {
+        const debutFormatted = formatDateForMySQL(debut);
+        const finFormatted = formatDateForMySQL(fin);
+        
+        let checkSql = `
+            SELECT * FROM reservations 
+            WHERE users_id = ? AND (
+                (debut < ? AND fin > ?) OR
+                (debut < ? AND fin > ?) OR
+                (debut >= ? AND fin <= ?)
+            )
+        `;
+        let params = [users_id, finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted];
+
+        if (excludeId) {
+            checkSql += ' AND id != ?';
+            params.push(excludeId);
+        }
+
+        const conflicts = await query(checkSql, params);
+        return conflicts.length === 0;
     }
 };
 

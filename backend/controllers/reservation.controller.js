@@ -44,6 +44,12 @@ export const reservationController = {
                 return res.status(400).json({ error: 'Les réservations ne sont possibles que du lundi au vendredi' });
             }
 
+            // Vérifier que l'utilisateur n'a pas déjà une autre réservation sur ce créneau horaire
+            const userAvailable = await Reservation.checkUserAvailability(debut, fin, users_id);
+            if (!userAvailable) {
+                return res.status(409).json({ error: 'Vous avez déjà une réservation sur ce créneau horaire' });
+            }
+
             const reservation = await Reservation.create({
                 titre,
                 description: description || '',
@@ -175,6 +181,12 @@ export const reservationController = {
             const isAdmin = req.userRole === 'admin';
             if (!isAdmin && existingReservation.users_id !== users_id) {
                 return res.status(403).json({ error: 'Vous ne pouvez modifier que vos propres réservations' });
+            }
+
+            // Vérifier que l'utilisateur n'a pas déjà une autre réservation sur ce créneau horaire
+            const userAvailable = await Reservation.checkUserAvailability(debut, fin, users_id, id);
+            if (!userAvailable) {
+                return res.status(409).json({ error: 'Vous avez déjà une réservation sur ce créneau horaire' });
             }
 
             // Vérifier la disponibilité (en excluant la réservation actuelle) pour la salle sélectionnée
