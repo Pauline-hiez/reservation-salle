@@ -126,17 +126,12 @@ function Profil() {
         }
     };
 
-
-
-    // Fonction pour extraire le nom depuis l'email (partie avant @)
     const extractNameFromEmail = (email) => {
         if (!email) return '';
         const namePart = email.split('@')[0];
-        // Remplacer les points, tirets et underscores par des espaces
         return namePart.replace(/[-_.]/g, ' ');
     };
 
-    // Fonction pour capitaliser chaque mot
     const capitalizeWords = (str) => {
         if (!str) return '';
         return str.split(' ')
@@ -144,7 +139,6 @@ function Profil() {
             .join(' ');
     };
 
-    // Fonction pour obtenir les initiales
     const getInitials = (name) => {
         if (!name) return '';
         return name

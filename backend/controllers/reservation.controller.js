@@ -4,12 +4,12 @@ export const reservationController = {
     // Créer une réservation
     async create(req, res) {
         try {
-            const { titre, description, debut, fin } = req.body;
+            const { titre, description, debut, fin, salle_id } = req.body;
             const users_id = req.userId; // vient du middleware auth
 
             // Validation des données
-            if (!titre || !debut || !fin) {
-                return res.status(400).json({ error: 'Titre, date de début et de fin sont requis' });
+            if (!titre || !debut || !fin || !salle_id) {
+                return res.status(400).json({ error: 'Titre, date de début, de fin et salle sont requis' });
             }
 
             // Vérifier que la date de début est avant la date de fin
@@ -49,7 +49,8 @@ export const reservationController = {
                 description: description || '',
                 debut,
                 fin,
-                users_id
+                users_id,
+                salle_id: parseInt(salle_id)
             });
 
             res.status(201).json({
@@ -123,12 +124,12 @@ export const reservationController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { titre, debut, fin, description } = req.body;
+            const { titre, debut, fin, description, salle_id } = req.body;
             const users_id = req.userId;
 
             // Validation des données
-            if (!titre || !debut || !fin) {
-                return res.status(400).json({ error: 'Titre, date de début et de fin sont requis' });
+            if (!titre || !debut || !fin || !salle_id) {
+                return res.status(400).json({ error: 'Titre, date de début, de fin et salle sont requis' });
             }
 
             // Vérifier que la date de début est avant la date de fin
@@ -176,11 +177,11 @@ export const reservationController = {
                 return res.status(403).json({ error: 'Vous ne pouvez modifier que vos propres réservations' });
             }
 
-            // Vérifier la disponibilité (en excluant la réservation actuelle)
-            const available = await Reservation.checkAvailability(debut, fin, id);
+            // Vérifier la disponibilité (en excluant la réservation actuelle) pour la salle sélectionnée
+            const available = await Reservation.checkAvailability(debut, fin, parseInt(salle_id), id);
 
             if (!available) {
-                return res.status(409).json({ error: 'Cette plage horaire est déjà réservée' });
+                return res.status(409).json({ error: 'Cette salle est déjà réservée pour cette plage horaire' });
             }
 
             // Mettre à jour la réservation
@@ -189,7 +190,8 @@ export const reservationController = {
                 debut,
                 fin,
                 description: description || existingReservation.description || '',
-                users_id
+                users_id,
+                salle_id: parseInt(salle_id)
             }, isAdmin);
 
             res.json({
@@ -220,13 +222,13 @@ export const reservationController = {
     // Vérifier la disponibilité
     async checkAvailability(req, res) {
         try {
-            const { debut, fin, excludeId } = req.query;
+            const { debut, fin, salle_id, excludeId } = req.query;
 
-            if (!debut || !fin) {
-                return res.status(400).json({ error: 'Les paramètres debut et fin sont requis' });
+            if (!debut || !fin || !salle_id) {
+                return res.status(400).json({ error: 'Les paramètres debut, fin et salle_id sont requis' });
             }
 
-            const available = await Reservation.checkAvailability(debut, fin, excludeId);
+            const available = await Reservation.checkAvailability(debut, fin, parseInt(salle_id), excludeId);
             res.json({ available });
         } catch (error) {
             console.error('Erreur vérification disponibilité:', error);

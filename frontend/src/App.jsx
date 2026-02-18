@@ -12,6 +12,7 @@ import Register from './pages/Register.jsx';
 import Planning from './pages/Planning.jsx';
 import Profil from './pages/Profil.jsx';
 import Admin from './pages/Admin.jsx';
+import Salles from './pages/Salles.jsx';
 
 function App() {
   const { loading } = useAuth();
@@ -30,6 +31,11 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/salles" element={
+            <PrivateRoute>
+              <Salles />
+            </PrivateRoute>
+          } />
           <Route path="/profil" element={
             <PrivateRoute>
               <Profil />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { reservationService } from '../services/api';
+import { reservationService, salleService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Planning() {
@@ -18,6 +18,7 @@ export default function Planning() {
 
     // États pour les réservations
     const [reservations, setReservations] = useState([]);
+    const [salles, setSalles] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [showTimeModal, setShowTimeModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -26,7 +27,8 @@ export default function Planning() {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [formData, setFormData] = useState({
         titre: '',
-        duree: 1 // durée en heures
+        duree: 1, // durée en heures
+        salle_id: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -37,7 +39,14 @@ export default function Planning() {
     const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const joursSemaineAbr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
-    // Fonction pour capitaliser chaque mot
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        if (imagePath.startsWith('/uploads/')) {
+            return `http://localhost:5000${imagePath}`;
+        }
+        return `/assets/img/${imagePath}`;
+    };
+
     const capitalizeWords = (str) => {
         if (!str) return '';
         return str.split(' ')
@@ -48,6 +57,7 @@ export default function Planning() {
     // Charger les réservations au montage du composant et lors des changements de période
     useEffect(() => {
         loadReservations();
+        loadSalles();
     }, [annee, mois, vue]);
 
     // Charger les réservations
@@ -62,6 +72,16 @@ export default function Planning() {
             setError('Erreur lors du chargement des réservations');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Charger les salles
+    const loadSalles = async () => {
+        try {
+            const data = await salleService.getAll();
+            setSalles(data);
+        } catch (err) {
+            console.error('Erreur chargement salles:', err);
         }
     };
 
@@ -86,7 +106,7 @@ export default function Planning() {
         }
 
         setSelectedSlot({ date, heure, dateDebut });
-        setFormData({ titre: '', duree: 1 });
+        setFormData({ titre: '', duree: 1, salle_id: salles.length > 0 ? salles[0].id : '' });
         setShowModal(true);
         setError(null);
     };
@@ -95,7 +115,7 @@ export default function Planning() {
     const closeModal = () => {
         setShowModal(false);
         setSelectedSlot(null);
-        setFormData({ titre: '', duree: 1 });
+        setFormData({ titre: '', duree: 1, salle_id: '' });
         setError(null);
         setIsEditing(false);
         setEditingReservationId(null);
@@ -150,7 +170,8 @@ export default function Planning() {
         setEditingReservationId(reservation.id);
         setFormData({
             titre: reservation.titre,
-            duree: dureeHeures
+            duree: dureeHeures,
+            salle_id: reservation.salle_id || (salles.length > 0 ? salles[0].id : '')
         });
         // Construire la date en format local
         const dateStr = `${debut.getFullYear()}-${String(debut.getMonth() + 1).padStart(2, '0')}-${String(debut.getDate()).padStart(2, '0')}`;
@@ -195,6 +216,11 @@ export default function Planning() {
             return;
         }
 
+        if (!formData.salle_id) {
+            setError('Veuillez sélectionner une salle');
+            return;
+        }
+
         try {
             setLoading(true);
 
@@ -220,7 +246,8 @@ export default function Planning() {
             const reservationData = {
                 titre: formData.titre,
                 debut: formatDateLocal(debut),
-                fin: formatDateLocal(fin)
+                fin: formatDateLocal(fin),
+                salle_id: parseInt(formData.salle_id)
             };
 
             if (isEditing && editingReservationId) {
@@ -919,6 +946,56 @@ export default function Planning() {
                                 )}
                             </div>
 
+                            <div className="mb-4 sm:mb-6">
+                                <label className="block text-gray-700 font-semibold mb-2 text-xs sm:text-sm">
+                                    Salle *
+                                </label>
+                                {salles.length === 0 ? (
+                                    <p className="text-red-600 text-sm">Aucune salle disponible</p>
+                                ) : (
+                                    <>
+                                        <select
+                                            name="salle_id"
+                                            value={formData.salle_id}
+                                            onChange={handleFormChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-cyan-950 text-sm sm:text-base"
+                                            required
+                                        >
+                                            <option value="">Sélectionner une salle</option>
+                                            {salles.map(salle => (
+                                                <option key={salle.id} value={salle.id}>
+                                                    {salle.nom} (Capacité: {salle.capacite} pers.)
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {formData.salle_id && salles.find(s => s.id === parseInt(formData.salle_id)) && (
+                                            <div className="mt-2 p-2 bg-cyan-50 rounded-lg border border-cyan-200">
+                                                {(() => {
+                                                    const selectedSalle = salles.find(s => s.id === parseInt(formData.salle_id));
+                                                    return (
+                                                        <div className="flex gap-3">
+                                                            {selectedSalle.image && (
+                                                                <img 
+                                                                    src={getImageUrl(selectedSalle.image)} 
+                                                                    alt={selectedSalle.nom}
+                                                                    className="w-16 h-16 object-cover rounded"
+                                                                />
+                                                            )}
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-cyan-800">{selectedSalle.nom}</p>
+                                                                {selectedSalle.description && (
+                                                                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{selectedSalle.description}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+
                             <div className="flex gap-2 sm:gap-3">
                                 <button
                                     type="button"
@@ -1085,6 +1162,32 @@ export default function Planning() {
                                     <p className="text-sm sm:text-base text-cyan-900">
                                         👤 {capitalizeWords(selectedReservation.user_name)}
                                     </p>
+                                </div>
+                            )}
+
+                            {/* Salle réservée */}
+                            {selectedReservation.salle_nom && (
+                                <div className="p-2 sm:p-3 bg-cyan-50 rounded">
+                                    <p className="text-xs sm:text-sm text-cyan-800 font-semibold mb-1">Salle</p>
+                                    <div className="flex gap-3 items-center">
+                                        {selectedReservation.salle_image && (
+                                            <img 
+                                                src={getImageUrl(selectedReservation.salle_image)} 
+                                                alt={selectedReservation.salle_nom}
+                                                className="w-16 h-16 object-cover rounded"
+                                            />
+                                        )}
+                                        <div>
+                                            <p className="text-sm sm:text-base text-cyan-900 font-bold">
+                                                🏢 {selectedReservation.salle_nom}
+                                            </p>
+                                            {selectedReservation.salle_capacite && (
+                                                <p className="text-xs text-cyan-700">
+                                                    Capacité: {selectedReservation.salle_capacite} personnes
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 

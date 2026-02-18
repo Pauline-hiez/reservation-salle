@@ -44,6 +44,14 @@ function Header() {
                                 Planning
                             </NavLink>
                             <NavLink
+                                to="/salles"
+                                className={({ isActive }) =>
+                                    `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`
+                                }
+                            >
+                                Les salles
+                            </NavLink>
+                            <NavLink
                                 to="/profil"
                                 className={({ isActive }) =>
                                     `inline-block hover:text-cyan-950 hover:scale-125 transition-all ${isActive ? 'font-semibold' : ''}`

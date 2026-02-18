@@ -1,9 +1,16 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { testConnection } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import reservationRoutes from './routes/reservation.routes.js';
+import salleRoutes from './routes/salle.routes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +20,9 @@ testConnection();
 // Middlewares
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+
+// Servir les fichiers uploadés statiquement
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Logger (dev)
 if (process.env.NODE_ENV !== 'production') {
@@ -47,6 +57,16 @@ DELETE  /api/reservations/:id
 */
 
 app.use('/api/reservations', reservationRoutes);
+
+/*
+GET     /api/salles
+GET     /api/salles/:id
+POST    /api/salles (admin)
+PUT     /api/salles/:id (admin)
+DELETE  /api/salles/:id (admin)
+*/
+
+app.use('/api/salles', salleRoutes);
 
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Route non trouvée' }));

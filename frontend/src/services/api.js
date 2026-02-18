@@ -75,9 +75,55 @@ export const reservationService = {
     }),
 
     // Vérifier la disponibilité
-    checkAvailability: (debut, fin, excludeId = null) => {
-        let url = `/reservations/availability?debut=${debut}&fin=${fin}`;
+    checkAvailability: (debut, fin, salle_id, excludeId = null) => {
+        let url = `/reservations/availability?debut=${debut}&fin=${fin}&salle_id=${salle_id}`;
         if (excludeId) url += `&excludeId=${excludeId}`;
         return fetchAPI(url);
+    }
+};
+
+export const salleService = {
+    // Récupérer toutes les salles
+    getAll: () => fetchAPI('/salles'),
+
+    // Récupérer une salle par ID
+    getById: (id) => fetchAPI(`/salles/${id}`),
+
+    // Créer une salle (admin)
+    create: (salleData) => fetchAPI('/salles', {
+        method: 'POST',
+        body: JSON.stringify(salleData)
+    }),
+
+    // Mettre à jour une salle (admin)
+    update: (id, salleData) => fetchAPI(`/salles/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(salleData)
+    }),
+
+    // Supprimer une salle (admin)
+    delete: (id) => fetchAPI(`/salles/${id}`, {
+        method: 'DELETE'
+    }),
+
+    // Upload d'image (admin)
+    uploadImage: async (file) => {
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch(`${API_URL}/salles/upload`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw { status: response.status, message: data.error || 'Erreur upload' };
+        }
+        return data;
     }
 };

@@ -9,8 +9,8 @@ function Home() {
 
     const salleImages = [
         "/assets/img/salle1.png",
-        "/assets/img/salle2.jpeg",
-        "/assets/img/salle3.png"
+        "/assets/img/salle2-2.jpg",
+        "/assets/img/salle3-3.jpg"
     ];
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,8 +97,7 @@ function Home() {
                             {/* Texte */}
                             <div className="flex-1 text-center lg:text-left order-2">
                                 <h2 className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl leading-relaxed">
-                                    Pour optimisez votre espace de travail, nous mettons à votre disposition une salle de réunion
-                                    d'une capacité de 12 personnes. <Link to="/register" className="underline hover:text-cyan-800 transition-colors"><br /> Créez votre compte</Link>, <Link to="/login" className="underline hover:text-cyan-800 transition-colors">connectez-vous</Link> et réservez de puis <Link to="/planning" className="underline hover:text-cyan-800 transition-colors">le planning</Link> ! Retrouvez
+                                    Pour optimisez votre espace de travail, nous mettons à votre disposition plusieurs <Link to="/salles" className="underline hover:text-cyan-800 transition-colors">salles</Link> de réunions avec des capacités différentes. <Link to="/register" className="underline hover:text-cyan-800 transition-colors"><br /> Créez votre compte</Link>, <Link to="/login" className="underline hover:text-cyan-800 transition-colors">connectez-vous</Link> et réservez de puis <Link to="/planning" className="underline hover:text-cyan-800 transition-colors">le planning</Link> ! Retrouvez
                                     toutes vos réservations sur votre page <Link to="/profil" className="underline hover:text-cyan-800 transition-colors">profil</Link>, modifiez-les ou annulez-les. <br /> Du lundi au vendredi et de 8h à 19h.
                                 </h2>
                             </div>

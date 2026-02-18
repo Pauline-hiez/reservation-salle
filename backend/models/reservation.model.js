@@ -20,31 +20,31 @@ const formatDateForMySQL = (isoDate) => {
 
 const Reservation = {
     // Créer une réservation
-    async create({ titre, description, debut, fin, users_id }) {
+    async create({ titre, description, debut, fin, users_id, salle_id }) {
         // Convertir les dates au format MySQL
         const debutFormatted = formatDateForMySQL(debut);
         const finFormatted = formatDateForMySQL(fin);
-        // Vérifier qu'il n'y a pas de conflit de réservation
+        // Vérifier qu'il n'y a pas de conflit de réservation pour la même salle
         const checkSql = `
             SELECT * FROM reservations 
-            WHERE (
+            WHERE salle_id = ? AND (
                 (debut < ? AND fin > ?) OR
                 (debut < ? AND fin > ?) OR
                 (debut >= ? AND fin <= ?)
             )
         `;
-        const conflicts = await query(checkSql, [finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
+        const conflicts = await query(checkSql, [salle_id, finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
 
         if (conflicts.length > 0) {
-            throw new Error('Cette plage horaire est déjà réservée');
+            throw new Error('Cette salle est déjà réservée pour cette plage horaire');
         }
 
         // Créer la réservation
         const sql = `
-            INSERT INTO reservations (titre, description, debut, fin, users_id)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO reservations (titre, description, debut, fin, users_id, salle_id)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
-        const result = await query(sql, [titre, description, debutFormatted, finFormatted, users_id]);
+        const result = await query(sql, [titre, description, debutFormatted, finFormatted, users_id, salle_id]);
 
         return {
             id: result.insertId,
@@ -52,7 +52,8 @@ const Reservation = {
             description,
             debut: debutFormatted,
             fin: finFormatted,
-            users_id
+            users_id,
+            salle_id
         };
     },
 
@@ -60,9 +61,11 @@ const Reservation = {
     async findAll() {
         const sql = `
             SELECT r.*, u.email as user_email,
-                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name,
+                   s.nom as salle_nom, s.image as salle_image, s.capacite as salle_capacite
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
+            LEFT JOIN salles s ON r.salle_id = s.id
             ORDER BY r.debut ASC
         `;
         return await query(sql);
@@ -72,9 +75,11 @@ const Reservation = {
     async findByPeriod(startDate, endDate) {
         const sql = `
             SELECT r.*, u.email as user_email,
-                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name,
+                   s.nom as salle_nom, s.image as salle_image, s.capacite as salle_capacite
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
+            LEFT JOIN salles s ON r.salle_id = s.id
             WHERE r.debut >= ? AND r.fin <= ?
             ORDER BY r.debut ASC
         `;
@@ -85,9 +90,11 @@ const Reservation = {
     async findById(id) {
         const sql = `
             SELECT r.*, u.email as user_email,
-                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name,
+                   s.nom as salle_nom, s.image as salle_image, s.capacite as salle_capacite
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
+            LEFT JOIN salles s ON r.salle_id = s.id
             WHERE r.id = ?
         `;
         const results = await query(sql, [id]);
@@ -98,9 +105,11 @@ const Reservation = {
     async findByUserId(userId) {
         const sql = `
             SELECT r.*, u.email as user_email,
-                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name,
+                   s.nom as salle_nom, s.image as salle_image, s.capacite as salle_capacite
             FROM reservations r
             LEFT JOIN users u ON r.users_id = u.id
+            LEFT JOIN salles s ON r.salle_id = s.id
             WHERE r.users_id = ?
             ORDER BY r.debut ASC
         `;
@@ -108,34 +117,34 @@ const Reservation = {
     },
 
     // Mettre à jour une réservation
-    async update(id, { titre, description, debut, fin, users_id }, isAdmin = false) {
+    async update(id, { titre, description, debut, fin, users_id, salle_id }, isAdmin = false) {
         // Convertir les dates au format MySQL
         const debutFormatted = formatDateForMySQL(debut);
         const finFormatted = formatDateForMySQL(fin);
 
-        // Vérifier qu'il n'y a pas de conflit (sauf avec la réservation actuelle)
+        // Vérifier qu'il n'y a pas de conflit (sauf avec la réservation actuelle) pour la même salle
         const checkSql = `
             SELECT * FROM reservations 
-            WHERE id != ? AND (
+            WHERE id != ? AND salle_id = ? AND (
                 (debut < ? AND fin > ?) OR
                 (debut < ? AND fin > ?) OR
                 (debut >= ? AND fin <= ?)
             )
         `;
-        const conflicts = await query(checkSql, [id, finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
+        const conflicts = await query(checkSql, [id, salle_id, finFormatted, debutFormatted, finFormatted, debutFormatted, debutFormatted, finFormatted]);
 
         if (conflicts.length > 0) {
-            throw new Error('Cette plage horaire est déjà réservée');
+            throw new Error('Cette salle est déjà réservée pour cette plage horaire');
         }
 
         // Si c'est un admin, pas besoin de vérifier users_id
         const sql = isAdmin
-            ? `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ? WHERE id = ?`
-            : `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ? WHERE id = ? AND users_id = ?`;
+            ? `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ?, salle_id = ? WHERE id = ?`
+            : `UPDATE reservations SET titre = ?, description = ?, debut = ?, fin = ?, salle_id = ? WHERE id = ? AND users_id = ?`;
         
         const params = isAdmin
-            ? [titre, description, debutFormatted, finFormatted, id]
-            : [titre, description, debutFormatted, finFormatted, id, users_id];
+            ? [titre, description, debutFormatted, finFormatted, salle_id, id]
+            : [titre, description, debutFormatted, finFormatted, salle_id, id, users_id];
         
         const result = await query(sql, params);
 
@@ -163,17 +172,17 @@ const Reservation = {
         return { message: 'Réservation supprimée avec succès' };
     },
 
-    // Vérifier la disponibilité d'une plage horaire
-    async checkAvailability(debut, fin, excludeId = null) {
+    // Vérifier la disponibilité d'une plage horaire pour une salle
+    async checkAvailability(debut, fin, salle_id, excludeId = null) {
         let checkSql = `
             SELECT * FROM reservations 
-            WHERE (
+            WHERE salle_id = ? AND (
                 (debut < ? AND fin > ?) OR
                 (debut < ? AND fin > ?) OR
                 (debut >= ? AND fin <= ?)
             )
         `;
-        let params = [fin, debut, fin, debut, debut, fin];
+        let params = [salle_id, fin, debut, fin, debut, debut, fin];
 
         if (excludeId) {
             checkSql += ' AND id != ?';
@@ -182,6 +191,21 @@ const Reservation = {
 
         const conflicts = await query(checkSql, params);
         return conflicts.length === 0;
+    },
+
+    // Récupérer les réservations par salle
+    async findBySalle(salle_id) {
+        const sql = `
+            SELECT r.*, u.email as user_email,
+                   REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(u.email, '@', 1), '-', ' '), '.', ' '), '_', ' ') as user_name,
+                   s.nom as salle_nom, s.image as salle_image, s.capacite as salle_capacite
+            FROM reservations r
+            LEFT JOIN users u ON r.users_id = u.id
+            LEFT JOIN salles s ON r.salle_id = s.id
+            WHERE r.salle_id = ?
+            ORDER BY r.debut ASC
+        `;
+        return await query(sql, [salle_id]);
     }
 };
 

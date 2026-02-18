@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { reservationService, authService } from '../services/api';
+import { reservationService, authService, salleService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import Spinner from '../components/Spinner';
 
@@ -7,6 +7,7 @@ const Admin = () => {
     const { user } = useAuth();
     const [reservations, setReservations] = useState([]);
     const [users, setUsers] = useState([]);
+    const [salles, setSalles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
@@ -29,9 +30,24 @@ const Admin = () => {
         password: ''
     });
 
+    // États pour la gestion des salles
+    const [showAddSalleModal, setShowAddSalleModal] = useState(false);
+    const [showEditSalleModal, setShowEditSalleModal] = useState(false);
+    const [editingSalle, setEditingSalle] = useState(null);
+    const [salleFormData, setSalleFormData] = useState({
+        nom: '',
+        description: '',
+        capacite: '',
+        image: ''
+    });
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
     // États pour l'affichage accordéon mobile
     const [showReservationsTable, setShowReservationsTable] = useState(false);
     const [showUsersTable, setShowUsersTable] = useState(false);
+    const [showSallesTable, setShowSallesTable] = useState(false);
 
     // Fonction utilitaire pour afficher un message temporaire
     const showTemporaryMessage = (setter, message, duration = 3000) => {
@@ -39,10 +55,58 @@ const Admin = () => {
         setTimeout(() => setter(null), duration);
     };
 
+    // Fonction utilitaire pour obtenir le bon chemin d'image
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        if (imagePath.startsWith('/uploads/')) {
+            return `http://localhost:5000${imagePath}`;
+        }
+        return `/assets/img/${imagePath}`;
+    };
+
+    // Fonction pour capitaliser chaque mot
+    const capitalizeWords = (str) => {
+        if (!str) return '';
+        return str.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const formatDateTime = (debut, fin) => {
+        const dateDebut = new Date(debut);
+        const dateFin = new Date(fin);
+        const dateStr = dateDebut.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
+            hour: 'numeric',
+            minute: '2-digit'
+        }).replace(':', 'h');
+        const heureFin = dateFin.toLocaleTimeString('fr-FR', {
+            hour: 'numeric',
+            minute: '2-digit'
+        }).replace(':', 'h');
+        return { time: `${heureDebut} - ${heureFin}`, date: dateStr };
+    };
+
     useEffect(() => {
         const loadData = async () => {
             await fetchReservations();
             await fetchUsers();
+            await fetchSalles();
         };
         loadData();
     }, []);
@@ -66,6 +130,15 @@ const Admin = () => {
         } catch (err) {
             console.error('Erreur lors du chargement des utilisateurs:', err);
             // Ne pas bloquer l'affichage si les utilisateurs ne se chargent pas
+        }
+    };
+
+    const fetchSalles = async () => {
+        try {
+            const data = await salleService.getAll();
+            setSalles(data);
+        } catch (err) {
+            console.error('Erreur lors du chargement des salles:', err);
         }
     };
 
@@ -93,6 +166,213 @@ const Admin = () => {
             await authService.deleteUser(id);
             showTemporaryMessage(setSuccessMessage, 'Utilisateur supprimé avec succès');
             fetchUsers();
+        } catch (err) {
+            showTemporaryMessage(setError, err.message || 'Erreur lors de la suppression');
+        }
+    };
+
+    // Gestion des salles
+    const openAddSalleModal = () => {
+        setSalleFormData({
+            nom: '',
+            description: '',
+            capacite: '',
+            image: ''
+        });
+        setImageFile(null);
+        setImagePreview(null);
+        setShowAddSalleModal(true);
+        setError(null);
+    };
+
+    const closeAddSalleModal = () => {
+        setShowAddSalleModal(false);
+        setSalleFormData({
+            nom: '',
+            description: '',
+            capacite: '',
+            image: ''
+        });
+        setImageFile(null);
+        setImagePreview(null);
+        setError(null);
+    };
+
+    const openEditSalleModal = (salle) => {
+        setEditingSalle(salle);
+        setSalleFormData({
+            nom: salle.nom,
+            description: salle.description || '',
+            capacite: salle.capacite,
+            image: salle.image || ''
+        });
+        setImageFile(null);
+        // Afficher l'image existante si elle existe
+        if (salle.image) {
+            setImagePreview(`http://localhost:5000${salle.image}`);
+        } else {
+            setImagePreview(null);
+        }
+        setShowEditSalleModal(true);
+        setError(null);
+    };
+
+    const closeEditSalleModal = () => {
+        setShowEditSalleModal(false);
+        setEditingSalle(null);
+        setSalleFormData({
+            nom: '',
+            description: '',
+            capacite: '',
+            image: ''
+        });
+        setImageFile(null);
+        setImagePreview(null);
+        setError(null);
+    };
+
+    const handleSalleFormChange = (e) => {
+        setSalleFormData({
+            ...salleFormData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Vérifier le type de fichier
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                setError('Type de fichier non autorisé. Seuls les fichiers JPG, PNG, GIF et WebP sont acceptés.');
+                return;
+            }
+
+            // Vérifier la taille (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Le fichier est trop volumineux. Taille maximale : 5MB');
+                return;
+            }
+
+            setImageFile(file);
+            
+            // Créer un aperçu
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+            setError(null);
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        setSalleFormData({
+            ...salleFormData,
+            image: ''
+        });
+    };
+
+    const handleCreateSalle = async (e) => {
+        e.preventDefault();
+
+        if (!salleFormData.nom.trim() || !salleFormData.capacite) {
+            setError('Le nom et la capacité sont requis');
+            return;
+        }
+
+        if (parseInt(salleFormData.capacite) <= 0) {
+            setError('La capacité doit être supérieure à 0');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            let imagePath = salleFormData.image;
+
+            // Si un fichier image a été sélectionné, l'uploader d'abord
+            if (imageFile) {
+                setUploadingImage(true);
+                const uploadResult = await salleService.uploadImage(imageFile);
+                imagePath = uploadResult.path;
+                setUploadingImage(false);
+            }
+
+            await salleService.create({
+                nom: salleFormData.nom,
+                description: salleFormData.description,
+                capacite: parseInt(salleFormData.capacite),
+                image: imagePath
+            });
+
+            showTemporaryMessage(setSuccessMessage, 'Salle créée avec succès !');
+            await fetchSalles();
+            closeAddSalleModal();
+        } catch (err) {
+            console.error('Erreur création salle:', err);
+            setError(err.message || 'Erreur lors de la création');
+        } finally {
+            setLoading(false);
+            setUploadingImage(false);
+        }
+    };
+
+    const handleUpdateSalle = async (e) => {
+        e.preventDefault();
+
+        if (!salleFormData.nom.trim() || !salleFormData.capacite) {
+            setError('Le nom et la capacité sont requis');
+            return;
+        }
+
+        if (parseInt(salleFormData.capacite) <= 0) {
+            setError('La capacité doit être supérieure à 0');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            let imagePath = salleFormData.image;
+
+            // Si un nouveau fichier image a été sélectionné, l'uploader d'abord
+            if (imageFile) {
+                setUploadingImage(true);
+                const uploadResult = await salleService.uploadImage(imageFile);
+                imagePath = uploadResult.path;
+                setUploadingImage(false);
+            }
+
+            await salleService.update(editingSalle.id, {
+                nom: salleFormData.nom,
+                description: salleFormData.description,
+                capacite: parseInt(salleFormData.capacite),
+                image: imagePath
+            });
+
+            showTemporaryMessage(setSuccessMessage, 'Salle modifiée avec succès !');
+            await fetchSalles();
+            closeEditSalleModal();
+        } catch (err) {
+            console.error('Erreur modification salle:', err);
+            setError(err.message || 'Erreur lors de la modification');
+        } finally {
+            setLoading(false);
+            setUploadingImage(false);
+        }
+    };
+
+    const handleDeleteSalle = async (id) => {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Toutes les réservations associées seront également supprimées.')) {
+            return;
+        }
+
+        try {
+            await salleService.delete(id);
+            showTemporaryMessage(setSuccessMessage, 'Salle supprimée avec succès');
+            fetchSalles();
+            fetchReservations(); // Recharger les réservations car certaines peuvent avoir été supprimées
         } catch (err) {
             showTemporaryMessage(setError, err.message || 'Erreur lors de la suppression');
         }
@@ -227,49 +507,6 @@ const Admin = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    // Fonction pour formater la date et l'heure (comme dans Profil)
-    const formatDateTime = (debut, fin) => {
-        const dateDebut = new Date(debut);
-        const dateFin = new Date(fin);
-
-        const dateStr = dateDebut.toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-
-        const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
-            hour: 'numeric',
-            minute: '2-digit'
-        }).replace(':', 'h');
-
-        const heureFin = dateFin.toLocaleTimeString('fr-FR', {
-            hour: 'numeric',
-            minute: '2-digit'
-        }).replace(':', 'h');
-
-        return { time: `${heureDebut} - ${heureFin}`, date: dateStr };
-    };
-
-    // Fonction pour capitaliser chaque mot
-    const capitalizeWords = (str) => {
-        if (!str) return '';
-        return str.split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-    };
-
     if (loading) {
         return (
             <div className="container mx-auto px-4 py-6 md:py-8 flex justify-center items-center min-h-[50vh]">
@@ -300,7 +537,7 @@ const Admin = () => {
             )}
 
             {/* Cartes de statistiques */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:mb-8 max-w-6xl mx-auto">
                 <div className="bg-white rounded-lg border-2 border-cyan-950 shadow-xl p-4 sm:p-6">
                     <div className="text-center">
                         <p className="text-lg sm:text-xl md:text-2xl text-cyan-800 font-bold mb-2">Total des réservations</p>
@@ -311,6 +548,12 @@ const Admin = () => {
                     <div className="text-center">
                         <p className="text-lg sm:text-xl md:text-2xl text-cyan-800 font-bold mb-2">Total des utilisateurs</p>
                         <p className="text-4xl sm:text-5xl md:text-6xl text-cyan-800 font-bold">{users.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-lg border-2 border-cyan-950 shadow-xl p-4 sm:p-6">
+                    <div className="text-center">
+                        <p className="text-lg sm:text-xl md:text-2xl text-cyan-800 font-bold mb-2">Total des salles</p>
+                        <p className="text-4xl sm:text-5xl md:text-6xl text-cyan-800 font-bold">{salles.length}</p>
                     </div>
                 </div>
             </div>
@@ -573,6 +816,107 @@ const Admin = () => {
                 </div>
             </div>
 
+            {/* Section Salles */}
+            <div className="mb-8 max-w-6xl mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 
+                        className="text-2xl sm:text-3xl font-bold text-cyan-800 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block flex-1"
+                        onClick={() => setShowSallesTable(!showSallesTable)}
+                    >
+                        <span>Gestion des Salles</span>
+                        <span className="md:hidden text-xl">{showSallesTable ? '▼' : '▶'}</span>
+                    </h2>
+                    <button
+                        onClick={openAddSalleModal}
+                        className="px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold cursor-pointer flex items-center gap-2 text-sm md:text-base"
+                    >
+                        <span className="text-xl">+</span> Ajouter
+                    </button>
+                </div>
+
+                {salles.length === 0 ? (
+                    <p className="text-center text-gray-600 text-sm md:text-base">Aucune salle trouvée</p>
+                ) : (
+                    <>
+                        {/* Vue desktop (cartes) */}
+                        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {salles.map((salle) => (
+                                <div key={salle.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                                    {salle.image && (
+                                        <img 
+                                            src={getImageUrl(salle.image)} 
+                                            alt={salle.nom}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                    )}
+                                    <div className="p-4">
+                                        <h3 className="text-xl font-bold text-cyan-800 mb-2">{salle.nom}</h3>
+                                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{salle.description}</p>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-sm text-gray-600 font-semibold">Capacité :</span>
+                                            <span className="text-sm text-cyan-800 font-bold">{salle.capacite} personnes</span>
+                                        </div>
+                                        <div className="flex gap-2 pt-3 border-t border-gray-200">
+                                            <button
+                                                onClick={() => openEditSalleModal(salle)}
+                                                className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <img src="/assets/icons/update.png" alt="Modifier" className="w-5 h-5" /> Modifier
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteSalle(salle.id)}
+                                                className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                            >
+                                                <img src="/assets/icons/delete.png" alt="Supprimer" className="w-5 h-5" /> Supprimer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Vue mobile (cards) */}
+                        {showSallesTable && (
+                            <div className="md:hidden space-y-4">
+                                {salles.map((salle) => (
+                                    <div key={salle.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg overflow-hidden">
+                                        {salle.image && (
+                                            <img 
+                                                src={getImageUrl(salle.image)} 
+                                                alt={salle.nom}
+                                                className="w-full h-48 object-cover"
+                                            />
+                                        )}
+                                        <div className="p-4">
+                                            <h3 className="text-lg font-bold text-cyan-800 mb-2">{salle.nom}</h3>
+                                            <p className="text-sm text-gray-600 mb-3">{salle.description}</p>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-sm text-gray-600 font-semibold">Capacité :</span>
+                                                <span className="text-sm text-cyan-800 font-bold">{salle.capacite} personnes</span>
+                                            </div>
+                                            <div className="flex gap-2 pt-3 border-t border-gray-200">
+                                                <button
+                                                    onClick={() => openEditSalleModal(salle)}
+                                                    className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                                >
+                                                    <img src="/assets/icons/update.png" alt="Modifier" className="w-5 h-5" /> Modifier
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteSalle(salle.id)}
+                                                    className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
+                                                >
+                                                    <img src="/assets/icons/delete.png" alt="Supprimer" className="w-5 h-5" /> Supprimer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
             {/* Modal de modification des réservations */}
             {showEditModal && editingReservation && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -734,6 +1078,263 @@ const Admin = () => {
                                 <button
                                     type="button"
                                     onClick={closeEditUserModal}
+                                    className="flex-1 px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold cursor-pointer text-sm md:text-base"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-3 sm:px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 cursor-pointer text-sm md:text-base"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Sauvegarde...' : '💾 Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal d'ajout d'une salle */}
+            {showAddSalleModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 border-2 border-cyan-950 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-start justify-between mb-4 sm:mb-6">
+                            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-600 flex items-center gap-2">
+                                <span className="text-2xl">➕</span> Ajouter une salle
+                            </h3>
+                            <button
+                                onClick={closeAddSalleModal}
+                                className="text-gray-400 hover:text-gray-600 text-2xl font-bold cursor-pointer"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleCreateSalle} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Nom de la salle *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nom"
+                                    value={salleFormData.nom}
+                                    onChange={handleSalleFormChange}
+                                    required
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                    placeholder="Ex: Salle Innovation"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Description
+                                </label>
+                                <textarea
+                                    name="description"
+                                    value={salleFormData.description}
+                                    onChange={handleSalleFormChange}
+                                    rows="3"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                    placeholder="Description de la salle..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Capacité *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="capacite"
+                                    value={salleFormData.capacite}
+                                    onChange={handleSalleFormChange}
+                                    required
+                                    min="1"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                    placeholder="Ex: 15"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Image
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    onChange={handleImageChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
+                                </p>
+                                
+                                {/* Aperçu de l'image */}
+                                {imagePreview && (
+                                    <div className="mt-3 relative">
+                                        <img 
+                                            src={imagePreview} 
+                                            alt="Aperçu" 
+                                            className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+                                            title="Supprimer l'image"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {uploadingImage && (
+                                    <div className="mt-2 text-sm text-cyan-600 flex items-center gap-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-600"></div>
+                                        Upload en cours...
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 sm:gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={closeAddSalleModal}
+                                    className="flex-1 px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold cursor-pointer text-sm md:text-base"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-3 sm:px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-600 transition-colors font-semibold disabled:opacity-50 cursor-pointer text-sm md:text-base"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Création...' : '💾 Créer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de modification d'une salle */}
+            {showEditSalleModal && editingSalle && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 border-2 border-cyan-950 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-start justify-between mb-4 sm:mb-6">
+                            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-600 flex items-center gap-2">
+                                <img src="/assets/icons/update.png" alt="Modifier" className="w-8 h-8" /> Modifier la salle
+                            </h3>
+                            <button
+                                onClick={closeEditSalleModal}
+                                className="text-gray-400 hover:text-gray-600 text-2xl font-bold cursor-pointer"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleUpdateSalle} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Nom de la salle *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nom"
+                                    value={salleFormData.nom}
+                                    onChange={handleSalleFormChange}
+                                    required
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Description
+                                </label>
+                                <textarea
+                                    name="description"
+                                    value={salleFormData.description}
+                                    onChange={handleSalleFormChange}
+                                    rows="3"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Capacité *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="capacite"
+                                    value={salleFormData.capacite}
+                                    onChange={handleSalleFormChange}
+                                    required
+                                    min="1"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                    Image
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    onChange={handleImageChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-950 focus:border-cyan-950 text-sm md:text-base"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
+                                </p>
+                                
+                                {/* Aperçu de l'image */}
+                                {imagePreview && (
+                                    <div className="mt-3 relative">
+                                        <img 
+                                            src={imagePreview} 
+                                            alt="Aperçu" 
+                                            className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+                                            title="Supprimer l'image"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {uploadingImage && (
+                                    <div className="mt-2 text-sm text-cyan-600 flex items-center gap-2">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-600"></div>
+                                        Upload en cours...
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 sm:gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={closeEditSalleModal}
                                     className="flex-1 px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold cursor-pointer text-sm md:text-base"
                                 >
                                     Annuler

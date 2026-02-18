@@ -2,7 +2,7 @@ function Footer() {
     return (
         <footer className="bg-cyan-800 text-white shadow-[0_-4px_15px_rgba(22,78,99,0.5)]">
             <div className="container mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Logo Section */}
                     <div className="flex flex-col items-center sm:items-start">
                         <img
@@ -10,19 +10,6 @@ function Footer() {
                             alt="Logo TechSpace"
                             className="w-48 sm:w-56 md:w-70 brightness-0 invert"
                         />
-                    </div>
-
-                    {/* Browse Section */}
-                    <div className="text-center sm:text-left">
-                        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Browse</h3>
-                        <ul className="space-y-1.5 md:space-y-2 text-sm md:text-base">
-                            <li><a href="/" className="hover:underline">Home</a></li>
-                            <li><a href="/about" className="hover:underline">About Us</a></li>
-                            <li><a href="/services" className="hover:underline">Services</a></li>
-                            <li><a href="/faqs" className="hover:underline">FAQs</a></li>
-                            <li><a href="/testimonials" className="hover:underline">Testimonials</a></li>
-                            <li><a href="/contact" className="hover:underline">Contact Us</a></li>
-                        </ul>
                     </div>
 
                     {/* Contact Us Section */}
@@ -42,7 +29,7 @@ function Footer() {
 
                     {/* Follow Us Section */}
                     <div className="text-center sm:text-left">
-                        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Follow US</h3>
+                        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3 md:mb-4">Follow Us</h3>
                         <div className="flex gap-3 md:gap-4 justify-center sm:justify-start">
                             <a
                                 href="https://facebook.com"
