@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { testConnection } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
@@ -13,12 +14,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const frontendDistPath = path.join(__dirname, '..', 'frontend', 'dist');
+const frontendIndexPath = path.join(frontendDistPath, 'index.html');
+
+const allowedOrigins = (process.env.CLIENT_URL || process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
 // Connexion BDD
 testConnection();
 
 // Middlewares
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: true
+}));
 app.use(express.json());
 
 // Servir les fichiers uploadés statiquement
@@ -67,6 +78,14 @@ DELETE  /api/salles/:id (admin)
 */
 
 app.use('/api/salles', salleRoutes);
+
+if (fs.existsSync(frontendIndexPath)) {
+    app.use(express.static(frontendDistPath));
+
+    app.get(/^(?!\/api)(?!\/uploads).*/, (req, res) => {
+        res.sendFile(frontendIndexPath);
+    });
+}
 
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Route non trouvée' }));

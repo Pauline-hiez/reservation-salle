@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { reservationService, authService, salleService } from '../services/api';
+import { reservationService, authService, salleService, buildBackendUrl } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import Spinner from '../components/Spinner';
 
@@ -59,7 +59,7 @@ const Admin = () => {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('/uploads/')) {
-            return `http://localhost:5000${imagePath}`;
+            return buildBackendUrl(imagePath);
         }
         return `/assets/img/${imagePath}`;
     };
@@ -209,7 +209,7 @@ const Admin = () => {
         setImageFile(null);
         // Afficher l'image existante si elle existe
         if (salle.image) {
-            setImagePreview(`http://localhost:5000${salle.image}`);
+            setImagePreview(buildBackendUrl(salle.image));
         } else {
             setImagePreview(null);
         }
@@ -255,7 +255,7 @@ const Admin = () => {
             }
 
             setImageFile(file);
-            
+
             // Créer un aperçu
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -421,7 +421,7 @@ const Admin = () => {
                 email: userFormData.email,
                 role: userFormData.role
             };
-            
+
             // N'inclure le mot de passe que s'il a été modifié
             if (userFormData.password.trim()) {
                 updateData.password = userFormData.password;
@@ -562,7 +562,7 @@ const Admin = () => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
                 {/* Section Réservations */}
                 <div className="overflow-x-auto">
-                    <h2 
+                    <h2
                         className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block"
                         onClick={() => setShowReservationsTable(!showReservationsTable)}
                     >
@@ -584,110 +584,110 @@ const Admin = () => {
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Salle</th>
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Utilisateur</th>
                                             <th className="border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {reservations.map((reservation, index) => {
-                                    const isLast = index === reservations.length - 1;
-                                    const dateTime = formatDateTime(reservation.debut, reservation.fin);
-                                    return (
-                                        <tr key={reservation.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-cyan-800 text-center font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {reservation.titre}
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs lg:text-sm`}>
-                                                <div className="font-bold">{dateTime.time}</div>
-                                                <div className="font-bold">{dateTime.date}</div>
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
-                                                {reservation.salle_nom || 'N/A'}
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
-                                                {capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}
-                                            </td>
-                                            <td className={`${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center`}>
-                                                <div className="flex justify-evenly items-center">
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {reservations.map((reservation, index) => {
+                                            const isLast = index === reservations.length - 1;
+                                            const dateTime = formatDateTime(reservation.debut, reservation.fin);
+                                            return (
+                                                <tr key={reservation.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-cyan-800 text-center font-bold text-xs lg:text-sm whitespace-nowrap`}>
+                                                        {reservation.titre}
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs lg:text-sm`}>
+                                                        <div className="font-bold">{dateTime.time}</div>
+                                                        <div className="font-bold">{dateTime.date}</div>
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
+                                                        {reservation.salle_nom || 'N/A'}
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 text-xs font-bold lg:text-sm whitespace-nowrap`}>
+                                                        {capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}
+                                                    </td>
+                                                    <td className={`${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center`}>
+                                                        <div className="flex justify-evenly items-center">
+                                                            <button
+                                                                onClick={() => openEditModal(reservation)}
+                                                                className="px-1 py-1 text-gray-800 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                                title="Modifier"
+                                                            >
+                                                                <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(reservation.id)}
+                                                                className="px-1 py-1 text-red-600 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                                title="Supprimer"
+                                                            >
+                                                                <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Vue mobile (cards) */}
+                            {showReservationsTable && (
+                                <div className="md:hidden space-y-4 mb-8">
+                                    {reservations.map((reservation) => {
+                                        const dateTime = formatDateTime(reservation.debut, reservation.fin);
+                                        return (
+                                            <div key={reservation.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg p-4">
+                                                <div className="mb-3">
+                                                    <h3 className="text-lg font-bold text-cyan-800">{reservation.titre}</h3>
+                                                </div>
+
+                                                <div className="space-y-2 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Date :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.date}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Horaire :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.time}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Salle :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{reservation.salle_nom || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Utilisateur :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-2 pt-3 border-t border-gray-200">
                                                     <button
                                                         onClick={() => openEditModal(reservation)}
-                                                        className="px-1 py-1 text-gray-800 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                                         title="Modifier"
                                                     >
-                                                        <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" />
+                                                        <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" /> Modifier
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(reservation.id)}
-                                                        className="px-1 py-1 text-red-600 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                        className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                                         title="Supprimer"
                                                     >
-                                                        <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" />
+                                                        <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Vue mobile (cards) */}
-                    {showReservationsTable && (
-                        <div className="md:hidden space-y-4 mb-8">
-                        {reservations.map((reservation) => {
-                            const dateTime = formatDateTime(reservation.debut, reservation.fin);
-                            return (
-                            <div key={reservation.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg p-4">
-                                <div className="mb-3">
-                                    <h3 className="text-lg font-bold text-cyan-800">{reservation.titre}</h3>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-
-                                <div className="space-y-2 mb-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Date :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.date}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Horaire :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{dateTime.time}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Salle :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{reservation.salle_nom || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600 font-semibold">Utilisateur :</span>
-                                        <span className="text-sm text-cyan-800 font-bold">{capitalizeWords(reservation.user_name || 'Utilisateur inconnu')}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2 pt-3 border-t border-gray-200">
-                                    <button
-                                        onClick={() => openEditModal(reservation)}
-                                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
-                                        title="Modifier"
-                                    >
-                                        <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" /> Modifier
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(reservation.id)}
-                                        className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
-                                        title="Supprimer"
-                                    >
-                                        <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                        })}
-                    </div>
+                            )}
+                        </>
                     )}
-                </>
-            )}
                 </div>
 
                 {/* Section Utilisateurs */}
                 <div className="overflow-x-auto">
-                    <h2 
+                    <h2
                         className="text-2xl sm:text-3xl font-bold text-cyan-800 mb-4 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block"
                         onClick={() => setShowUsersTable(!showUsersTable)}
                     >
@@ -709,125 +709,125 @@ const Admin = () => {
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Rôle</th>
                                             <th className="border-r border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Inscription</th>
                                             <th className="border-b border-cyan-950 bg-cyan-800 px-2 py-2 text-white text-sm lg:text-base whitespace-nowrap">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((utilisateur, index) => {
-                                    const isLast = index === users.length - 1;
-                                    const inscriptionDate = new Date(utilisateur.created_at).toLocaleDateString('fr-FR', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric'
-                                    });
-                                    return (
-                                        <tr key={utilisateur.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-cyan-800 text-center font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {capitalizeWords(utilisateur.name || 'N/A')}
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {utilisateur.email}
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                <span className={`px-2 py-1 rounded text-xs lg:text-sm ${utilisateur.role === 'admin' ? 'text-cyan-900 font-bold' : 'text-cyan-700'}`}>
-                                                    {utilisateur.role}
-                                                </span>
-                                            </td>
-                                            <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
-                                                {inscriptionDate}
-                                            </td>
-                                            <td className={`${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center`}>
-                                                <div className="flex justify-evenly items-center">
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {users.map((utilisateur, index) => {
+                                            const isLast = index === users.length - 1;
+                                            const inscriptionDate = new Date(utilisateur.created_at).toLocaleDateString('fr-FR', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            });
+                                            return (
+                                                <tr key={utilisateur.id} className={`${index % 2 === 0 ? 'bg-cyan-100' : 'bg-white'} hover:bg-cyan-50`}>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-cyan-800 text-center font-bold text-xs lg:text-sm whitespace-nowrap`}>
+                                                        {capitalizeWords(utilisateur.name || 'N/A')}
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
+                                                        {utilisateur.email}
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
+                                                        <span className={`px-2 py-1 rounded text-xs lg:text-sm ${utilisateur.role === 'admin' ? 'text-cyan-900 font-bold' : 'text-cyan-700'}`}>
+                                                            {utilisateur.role}
+                                                        </span>
+                                                    </td>
+                                                    <td className={`border-r ${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center text-cyan-800 font-bold text-xs lg:text-sm whitespace-nowrap`}>
+                                                        {inscriptionDate}
+                                                    </td>
+                                                    <td className={`${!isLast ? 'border-b' : ''} border-cyan-950 px-2 py-2 text-center`}>
+                                                        <div className="flex justify-evenly items-center">
+                                                            <button
+                                                                onClick={() => openEditUserModal(utilisateur)}
+                                                                className="px-1 py-1 text-gray-800 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                                title="Modifier"
+                                                            >
+                                                                <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteUser(utilisateur.id)}
+                                                                className="px-1 py-1 text-red-600 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                                title="Supprimer"
+                                                                disabled={utilisateur.id === user?.id}
+                                                            >
+                                                                <img
+                                                                    src="/assets/icons/delete.png"
+                                                                    alt="Supprimer"
+                                                                    className={`w-6 h-6 ${utilisateur.id === user?.id ? 'opacity-30' : ''}`}
+                                                                />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Vue mobile (cards) */}
+                            {showUsersTable && (
+                                <div className="md:hidden space-y-4 mb-8">
+                                    {users.map((utilisateur) => {
+                                        const inscriptionDate = new Date(utilisateur.created_at).toLocaleDateString('fr-FR', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric'
+                                        });
+                                        return (
+                                            <div key={utilisateur.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg p-4">
+                                                <div className="mb-3">
+                                                    <h3 className="text-lg font-bold text-cyan-800">{capitalizeWords(utilisateur.name || 'N/A')}</h3>
+                                                </div>
+
+                                                <div className="space-y-2 mb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Email :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{utilisateur.email}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Rôle :</span>
+                                                        <span className={`text-sm font-bold px-2 py-1 rounded ${utilisateur.role === 'admin' ? 'text-cyan-800' : 'bg-gray-100 text-gray-700'}`}>
+                                                            {utilisateur.role}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-600 font-semibold">Inscription :</span>
+                                                        <span className="text-sm text-cyan-800 font-bold">{inscriptionDate}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-2 pt-3 border-t border-gray-200">
                                                     <button
                                                         onClick={() => openEditUserModal(utilisateur)}
-                                                        className="px-1 py-1 text-gray-800 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
                                                         title="Modifier"
                                                     >
-                                                        <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" />
+                                                        <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" /> Modifier
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteUser(utilisateur.id)}
-                                                        className="px-1 py-1 text-red-600 rounded-lg transition-colors font-semibold cursor-pointer transform hover:scale-150"
+                                                        className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title="Supprimer"
                                                         disabled={utilisateur.id === user?.id}
                                                     >
-                                                        <img 
-                                                            src="/assets/icons/delete.png" 
-                                                            alt="Supprimer" 
-                                                            className={`w-6 h-6 ${utilisateur.id === user?.id ? 'opacity-30' : ''}`}
-                                                        />
+                                                        <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Vue mobile (cards) */}
-                    {showUsersTable && (
-                        <div className="md:hidden space-y-4 mb-8">
-                        {users.map((utilisateur) => {
-                            const inscriptionDate = new Date(utilisateur.created_at).toLocaleDateString('fr-FR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                            });
-                            return (
-                                <div key={utilisateur.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg p-4">
-                                    <div className="mb-3">
-                                        <h3 className="text-lg font-bold text-cyan-800">{capitalizeWords(utilisateur.name || 'N/A')}</h3>
-                                    </div>
-
-                                    <div className="space-y-2 mb-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 font-semibold">Email :</span>
-                                            <span className="text-sm text-cyan-800 font-bold">{utilisateur.email}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 font-semibold">Rôle :</span>
-                                            <span className={`text-sm font-bold px-2 py-1 rounded ${utilisateur.role === 'admin' ? 'text-cyan-800' : 'bg-gray-100 text-gray-700'}`}>
-                                                {utilisateur.role}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 font-semibold">Inscription :</span>
-                                            <span className="text-sm text-cyan-800 font-bold">{inscriptionDate}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-2 pt-3 border-t border-gray-200">
-                                        <button
-                                            onClick={() => openEditUserModal(utilisateur)}
-                                            className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1"
-                                            title="Modifier"
-                                        >
-                                            <img src="/assets/icons/update.png" alt="Modifier" className="w-6 h-6" /> Modifier
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteUser(utilisateur.id)}
-                                            className="flex-1 px-3 py-2 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title="Supprimer"
-                                            disabled={utilisateur.id === user?.id}
-                                        >
-                                            <img src="/assets/icons/delete.png" alt="Supprimer" className="w-6 h-6" /> Supprimer
-                                        </button>
-                                    </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            );
-                        })}
-                    </div>
+                            )}
+                        </>
                     )}
-                </>
-            )}
                 </div>
             </div>
 
             {/* Section Salles */}
             <div className="mb-8 max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 
+                    <h2
                         className="text-2xl sm:text-3xl font-bold text-cyan-800 text-center cursor-pointer md:cursor-default flex items-center justify-center gap-2 md:block flex-1"
                         onClick={() => setShowSallesTable(!showSallesTable)}
                     >
@@ -851,8 +851,8 @@ const Admin = () => {
                             {salles.map((salle) => (
                                 <div key={salle.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
                                     {salle.image && (
-                                        <img 
-                                            src={getImageUrl(salle.image)} 
+                                        <img
+                                            src={getImageUrl(salle.image)}
                                             alt={salle.nom}
                                             className="w-full h-48 object-cover"
                                         />
@@ -889,8 +889,8 @@ const Admin = () => {
                                 {salles.map((salle) => (
                                     <div key={salle.id} className="bg-white border-2 border-cyan-950 rounded-lg shadow-lg overflow-hidden">
                                         {salle.image && (
-                                            <img 
-                                                src={getImageUrl(salle.image)} 
+                                            <img
+                                                src={getImageUrl(salle.image)}
                                                 alt={salle.nom}
                                                 className="w-full h-48 object-cover"
                                             />
@@ -1184,13 +1184,13 @@ const Admin = () => {
                                 <p className="text-xs text-gray-500 mt-1">
                                     Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
                                 </p>
-                                
+
                                 {/* Aperçu de l'image */}
                                 {imagePreview && (
                                     <div className="mt-3 relative">
-                                        <img 
-                                            src={imagePreview} 
-                                            alt="Aperçu" 
+                                        <img
+                                            src={imagePreview}
+                                            alt="Aperçu"
                                             className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
                                         />
                                         <button
@@ -1311,13 +1311,13 @@ const Admin = () => {
                                 <p className="text-xs text-gray-500 mt-1">
                                     Formats acceptés : JPG, PNG, GIF, WebP (max 5MB)
                                 </p>
-                                
+
                                 {/* Aperçu de l'image */}
                                 {imagePreview && (
                                     <div className="mt-3 relative">
-                                        <img 
-                                            src={imagePreview} 
-                                            alt="Aperçu" 
+                                        <img
+                                            src={imagePreview}
+                                            alt="Aperçu"
                                             className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
                                         />
                                         <button

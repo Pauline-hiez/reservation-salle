@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { salleService } from '../services/api';
+import { salleService, buildBackendUrl } from '../services/api';
 
 function Home() {
     const images = [
@@ -25,7 +25,7 @@ function Home() {
             try {
                 const salles = await salleService.getAll();
                 console.log('Salles reçues de l\'API:', salles);
-                
+
                 if (salles && salles.length > 0) {
                     // Filtrer les salles qui ont une image et construire les URLs correctes
                     const imagesFromAPI = salles
@@ -33,7 +33,7 @@ function Home() {
                         .map(salle => {
                             // Si l'image commence par /uploads, utiliser l'URL complète du backend
                             if (salle.image.startsWith('/uploads')) {
-                                return `http://localhost:5000${salle.image}`;
+                                return buildBackendUrl(salle.image);
                             }
                             // Sinon, si c'est juste un nom de fichier, ajouter le chemin des assets
                             else if (!salle.image.startsWith('/') && !salle.image.startsWith('http')) {
@@ -42,9 +42,9 @@ function Home() {
                             // Sinon, utiliser l'image telle quelle
                             return salle.image;
                         });
-                    
+
                     console.log('Images construites:', imagesFromAPI);
-                    
+
                     // Utiliser les images de l'API si disponibles, sinon garder les images par défaut
                     if (imagesFromAPI.length > 0) {
                         console.log('Images chargées depuis l\'API:', imagesFromAPI);

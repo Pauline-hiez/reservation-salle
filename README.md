@@ -261,6 +261,22 @@ Authorization: Bearer <votre_token_jwt>
 router.get('/ma-route', authenticateToken, monController);
 ```
 
+## Déploiement Plesk
+
+La configuration la plus simple est de faire servir le frontend buildé par le backend Node.
+
+1. Installer les dépendances dans `backend/` et `frontend/`.
+2. Construire le frontend avec `npm run build` dans `frontend/`.
+3. Déployer `backend/` comme application Node.js sur Plesk.
+4. Copier le contenu de `frontend/dist/` dans le dossier du frontend servi par le backend, ou laisser le backend le servir directement si `frontend/dist/` est présent au même niveau.
+5. Configurer les variables d'environnement sur Plesk:
+  - `PORT` fourni par Plesk
+  - `CLIENT_URL` avec l'URL publique du site
+  - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+  - `JWT_SECRET`
+
+Si le frontend et le backend sont hébergés sur deux domaines différents, définir aussi `VITE_API_URL` et `VITE_BACKEND_URL` côté frontend avant le build.
+
 **Frontend** ([App.jsx](frontend/src/App.jsx))
 ```jsx
 <Route element={<PrivateRoute />}>

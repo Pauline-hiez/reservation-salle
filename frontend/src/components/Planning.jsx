@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { reservationService, salleService } from '../services/api';
+import { reservationService, salleService, buildBackendUrl } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Planning() {
     const [searchParams, setSearchParams] = useSearchParams();
     const salleIdFromUrl = searchParams.get('salle');
-    
+
     const moisNoms = [
         'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -47,7 +47,7 @@ export default function Planning() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('/uploads/')) {
-            return `http://localhost:5000${imagePath}`;
+            return buildBackendUrl(imagePath);
         }
         return `/assets/img/${imagePath}`;
     };
@@ -316,12 +316,12 @@ export default function Planning() {
     // Vérifier si un créneau est réservé
     const isSlotReserved = (date, heure) => {
         let filteredReservations = reservations;
-        
+
         // Filtrer par salle si une salle est sélectionnée
         if (salleSelectionnee) {
             filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
         }
-        
+
         return filteredReservations.some(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
@@ -337,12 +337,12 @@ export default function Planning() {
     // Obtenir les réservations pour un créneau
     const getReservationsForSlot = (date, heure) => {
         let filteredReservations = reservations;
-        
+
         // Filtrer par salle si une salle est sélectionnée
         if (salleSelectionnee) {
             filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
         }
-        
+
         return filteredReservations.filter(reservation => {
             const debut = new Date(reservation.debut);
             const fin = new Date(reservation.fin);
@@ -666,12 +666,12 @@ export default function Planning() {
     // Obtenir les réservations pour un jour spécifique
     const getReservationsForDay = (dateStr) => {
         let filteredReservations = reservations;
-        
+
         // Filtrer par salle si une salle est sélectionnée
         if (salleSelectionnee) {
             filteredReservations = filteredReservations.filter(res => res.salle_id === salleSelectionnee.id);
         }
-        
+
         return filteredReservations.filter(reservation => {
             const debut = new Date(reservation.debut);
             const dateJour = new Date(dateStr + "T00:00:00");
@@ -837,8 +837,8 @@ export default function Planning() {
                     <div className="mb-4 sm:mb-6 flex justify-center">
                         <div className="bg-cyan-100 border-2 border-cyan-800 rounded-lg px-3 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
                             {salleSelectionnee.image && (
-                                <img 
-                                    src={getImageUrl(salleSelectionnee.image)} 
+                                <img
+                                    src={getImageUrl(salleSelectionnee.image)}
                                     alt={salleSelectionnee.nom}
                                     className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded"
                                 />
@@ -861,7 +861,7 @@ export default function Planning() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* Sélecteur de vue */}
                 <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
                     <button
@@ -1038,8 +1038,8 @@ export default function Planning() {
                                                     return (
                                                         <div className="flex gap-3">
                                                             {selectedSalle.image && (
-                                                                <img 
-                                                                    src={getImageUrl(selectedSalle.image)} 
+                                                                <img
+                                                                    src={getImageUrl(selectedSalle.image)}
                                                                     alt={selectedSalle.nom}
                                                                     className="w-16 h-16 object-cover rounded"
                                                                 />
@@ -1234,8 +1234,8 @@ export default function Planning() {
                                     <p className="text-xs sm:text-sm text-cyan-800 font-semibold mb-1">Salle</p>
                                     <div className="flex gap-3 items-center">
                                         {selectedReservation.salle_image && (
-                                            <img 
-                                                src={getImageUrl(selectedReservation.salle_image)} 
+                                            <img
+                                                src={getImageUrl(selectedReservation.salle_image)}
                                                 alt={selectedReservation.salle_nom}
                                                 className="w-16 h-16 object-cover rounded"
                                             />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { salleService } from '../services/api';
+import { salleService, buildBackendUrl } from '../services/api';
 import Spinner from '../components/Spinner';
 
 export default function Salles() {
@@ -12,7 +12,7 @@ export default function Salles() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('/uploads/')) {
-            return `http://localhost:5000${imagePath}`;
+            return buildBackendUrl(imagePath);
         }
         return `/assets/img/${imagePath}`;
     };
@@ -60,9 +60,6 @@ export default function Salles() {
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-cyan-800 mb-4">
                     Nos Salles
                 </h1>
-                <p className="text-base sm:text-lg text-cyan-700 max-w-3xl mx-auto">
-                    Découvrez nos espaces modernes et équipés, conçus pour répondre à tous vos besoins de réunion et de collaboration.
-                </p>
             </div>
 
             {salles.length === 0 ? (
@@ -72,16 +69,16 @@ export default function Salles() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                     {salles.map((salle) => (
-                        <div 
-                            key={salle.id} 
+                        <div
+                            key={salle.id}
                             onClick={() => navigate(`/planning?salle=${salle.id}`)}
                             className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-cyan-950 hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer"
                         >
                             {/* Image de la salle */}
                             <div className="relative h-64 overflow-hidden">
                                 {salle.image ? (
-                                    <img 
-                                        src={getImageUrl(salle.image)} 
+                                    <img
+                                        src={getImageUrl(salle.image)}
                                         alt={salle.nom}
                                         className="w-full h-full object-cover"
                                     />
@@ -104,7 +101,7 @@ export default function Salles() {
                                 <h3 className="text-2xl font-bold text-cyan-800 mb-3">
                                     {salle.nom}
                                 </h3>
-                                
+
                                 {salle.description && (
                                     <p className="text-gray-700 text-sm leading-relaxed mb-4">
                                         {salle.description}

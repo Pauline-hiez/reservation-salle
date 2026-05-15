@@ -1,4 +1,17 @@
-const API_URL = 'http://localhost:5000/api';
+const DEFAULT_API_URL = '/api';
+const DEFAULT_BACKEND_URL = '';
+
+export const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, '');
+export const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
+
+export function buildBackendUrl(resourcePath) {
+    if (!resourcePath) return resourcePath;
+    if (/^https?:\/\//i.test(resourcePath)) return resourcePath;
+
+    const normalizedPath = resourcePath.startsWith('/') ? resourcePath : `/${resourcePath}`;
+    return BACKEND_URL ? `${BACKEND_URL}${normalizedPath}` : normalizedPath;
+}
+
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem('token');
     const headers = {
@@ -33,12 +46,12 @@ export const authService = {
     }),
     getProfile: () => fetchAPI('/auth/me'),
     getAllUsers: () => fetchAPI('/auth/users'),
-    
+
     updateUser: (id, userData) => fetchAPI(`/auth/users/${id}`, {
         method: 'PUT',
         body: JSON.stringify(userData)
     }),
-    
+
     deleteUser: (id) => fetchAPI(`/auth/users/${id}`, {
         method: 'DELETE'
     })
